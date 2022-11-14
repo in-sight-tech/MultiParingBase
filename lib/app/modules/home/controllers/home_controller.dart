@@ -1,23 +1,102 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
+import 'package:multiparingbase/app/data/models/data_9axis.dart';
+import 'package:multiparingbase/app/data/models/imu.dart';
+import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 
 class HomeController extends GetxController {
-  //TODO: Implement HomeController
+  static HomeController get to => Get.find<HomeController>();
 
-  final count = 0.obs;
-  @override
-  void onInit() {
-    super.onInit();
+  final bufferLength = 400;
+  final devices = RxList<IMU>();
+  final datas = <RxList<Data9Axis>>[];
+
+  final segmentedControlValue = 0.obs;
+
+  void setSegmentedControlValue(int? newValue) => segmentedControlValue(newValue);
+
+  void discoveryDevice() async {
+    Get.defaultDialog(
+      title: 'Devices',
+      content: BluetoothDiscovery(
+        onTap: (BluetoothDevice device) async {
+          Get.back();
+
+          Get.defaultDialog(
+            title: '연결 중',
+            content: const CircularProgressIndicator(),
+            barrierDismissible: false,
+          );
+
+          IMU sensor = IMU(
+            device: device,
+            onData: (IMU sensor, Data9Axis? data) {
+              if (data == null) return;
+
+              int index = devices.indexOf(sensor);
+
+              datas[index].removeAt(0);
+              datas[index].add(data);
+            },
+            disConnect: (IMU sensor) {
+              removeDevice(sensor);
+            },
+          );
+
+          if (await sensor.connect()) {
+            Get.back();
+            devices.add(sensor);
+            datas.add(RxList.generate(bufferLength, (index) => Data9Axis()));
+          } else {
+            Get.back();
+
+            Get.defaultDialog(
+              title: '연결 실패',
+              content: const Icon(
+                Icons.error_outline,
+                size: 40,
+                color: Colors.red,
+              ),
+            );
+
+            Future.delayed(const Duration(seconds: 3), Get.back);
+          }
+        },
+      ),
+    );
   }
 
-  @override
-  void onReady() {
-    super.onReady();
+  void disconnect(IMU sensor) {
+    sensor.dispose();
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  void removeDevice(IMU sensor) {
+    int index = devices.indexOf(sensor);
+
+    try {
+      devices.remove(sensor);
+      datas.removeAt(index);
+    } catch (e) {
+      printError(info: e.toString());
+    }
   }
 
-  void increment() => count.value++;
+  void setUnit(IMU sensor, String unit) {
+    sensor.setUnit(unit);
+  }
+
+  void setReturnRate(IMU sensor, int frequency) {
+    sensor.setReturnRate(frequency);
+  }
+
+  void calibrate(IMU sensor) {
+    sensor.calibrate();
+  }
+
+  void setReturnContents(IMU sensor, ReturnContents returnContents) {
+    sensor.setReturnContent(returnContents);
+  }
 }
