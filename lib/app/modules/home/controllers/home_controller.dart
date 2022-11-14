@@ -15,11 +15,7 @@ class HomeController extends GetxController {
   final devices = RxList<IMU>();
   final datas = <RxList<Data9Axis>>[];
 
-  final segmentedControlValue = 0.obs;
-
   final recordState = RxnBool(null);
-
-  void setSegmentedControlValue(int? newValue) => segmentedControlValue(newValue);
 
   void discoveryDevice() async {
     Get.defaultDialog(
