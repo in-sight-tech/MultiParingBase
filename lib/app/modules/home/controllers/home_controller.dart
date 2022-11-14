@@ -5,6 +5,7 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:multiparingbase/app/data/models/data_9axis.dart';
 import 'package:multiparingbase/app/data/models/imu.dart';
+import 'package:multiparingbase/app/data/utils.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 
 class HomeController extends GetxController {
@@ -15,6 +16,8 @@ class HomeController extends GetxController {
   final datas = <RxList<Data9Axis>>[];
 
   final segmentedControlValue = 0.obs;
+
+  final recordState = RxnBool(null);
 
   void setSegmentedControlValue(int? newValue) => segmentedControlValue(newValue);
 
@@ -98,5 +101,15 @@ class HomeController extends GetxController {
 
   void setReturnContents(IMU sensor, ReturnContents returnContents) {
     sensor.setReturnContent(returnContents);
+  }
+
+  void switchRecordState(bool? value) {
+    if (value == null) {
+      recordState.value = true;
+    } else if (value == true) {
+      recordState.value = false;
+    } else if (value == false) {
+      recordState.value = null;
+    }
   }
 }

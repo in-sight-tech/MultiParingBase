@@ -25,6 +25,7 @@ class IMUTile extends StatefulWidget {
 
 class _IMUTileState extends State<IMUTile> {
   int? value = 0;
+  late String unit;
 
   List<FlSpot> get ax => [
         for (int i = 0; i < widget.signal.length; i++)
@@ -126,6 +127,26 @@ class _IMUTileState extends State<IMUTile> {
       ];
 
   @override
+  initState() {
+    super.initState();
+
+    unit = widget.unit;
+  }
+
+  @override
+  void didUpdateWidget(covariant IMUTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (value == 0) {
+      unit = widget.unit;
+    } else if (value == 1) {
+      unit = '°/s';
+    } else if (value == 2) {
+      unit = '°';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Card(
       child: Column(
@@ -152,7 +173,9 @@ class _IMUTileState extends State<IMUTile> {
               2: Text('Angle'),
             },
             groupValue: value,
-            onValueChanged: (int? newValue) => setState(() => value = newValue),
+            onValueChanged: (int? newValue) {
+              setState(() => value = newValue);
+            },
           ),
           Container(
             height: 150,
@@ -236,7 +259,7 @@ class _IMUTileState extends State<IMUTile> {
                 borderData: FlBorderData(show: true),
                 titlesData: FlTitlesData(
                   leftTitles: AxisTitles(
-                    axisNameWidget: Text(widget.unit),
+                    axisNameWidget: Text(unit),
                     sideTitles: SideTitles(showTitles: true, reservedSize: 50),
                   ),
                   topTitles: AxisTitles(),

@@ -21,7 +21,7 @@ class IMU extends Sensor {
   int? opCode;
   int? predictTime;
 
-  String unit = '9.8m/s²';
+  String accelerationUnit = '9.8m/s²';
 
   ReturnContents returnContents = ReturnContents();
 
@@ -45,6 +45,7 @@ class IMU extends Sensor {
       if (connection?.isConnected == false) throw 'Connect error';
 
       await setReturnRate(frequency);
+      await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
         for (int byte in packets) {
@@ -120,7 +121,7 @@ class IMU extends Sensor {
         signal.ay = (bytes.getInt16(4, Endian.little) / 32768) * 16;
         signal.az = (bytes.getInt16(6, Endian.little) / 32768) * 16;
 
-        if (unit == '9.8m/s²') {
+        if (accelerationUnit == '9.8m/s²') {
           signal.ax = signal.ax! * 9.80665;
           signal.ay = signal.ay! * 9.80665;
           signal.az = signal.az! * 9.80665;
@@ -146,7 +147,7 @@ class IMU extends Sensor {
   }
 
   Future<bool> setUnit(String unit) async {
-    this.unit = unit;
+    accelerationUnit = unit;
 
     return true;
   }
