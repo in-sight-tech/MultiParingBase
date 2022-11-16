@@ -8,6 +8,14 @@ class Utils {
   static Future<bool> toCSV(Map<String, dynamic> args) async {
     List<List<String>> rows = [];
 
+    // if (minLength == null) return;
+    // printInfo(info: 'Min length is $minLength');
+
+    // List<String> intergratedData;
+    // for (int i = 0; i < minLength; i++) {
+
+    // }
+
     rows.add(['#HEADER']);
     rows.add(['#TITLES']);
     rows.add(['']);
