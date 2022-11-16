@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:multiparingbase/app/data/models/data_9axis.dart';
+import 'package:multiparingbase/app/data/collections/data_9axis.dart';
 import 'package:multiparingbase/app/data/models/sensor.dart';
 
 class IMU extends Sensor {
@@ -14,9 +14,6 @@ class IMU extends Sensor {
   Function(IMU)? disConnect;
 
   Timer? _timer;
-
-  int frequency = 200;
-  late int tick;
 
   int? opCode;
   int? predictTime;

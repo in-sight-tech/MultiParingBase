@@ -1,4 +1,11 @@
+import 'package:isar/isar.dart';
+
+part 'data_9axis.g.dart';
+
+@collection
 class Data9Axis {
+  Id id = Isar.autoIncrement;
+
   int? time;
 
   double? ax;

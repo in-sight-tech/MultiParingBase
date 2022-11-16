@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
-import 'package:multiparingbase/app/data/models/data_9axis.dart';
+import 'package:isar/isar.dart';
+import 'package:multiparingbase/app/data/collections/data_9axis.dart';
 import 'package:multiparingbase/app/data/models/imu.dart';
-import 'package:multiparingbase/app/data/utils.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 
 class HomeController extends GetxController {
@@ -16,6 +16,20 @@ class HomeController extends GetxController {
   final datas = <RxList<Data9Axis>>[];
 
   final recordState = RxnBool(null);
+
+  late final List<Isar> isars;
+
+  @override
+  void onInit() async {
+    super.onInit();
+
+    isars = [
+      // await Isar.open([Data9AxisSchema], name: 'sensor1', inspector: true),
+      // await Isar.open([Data9AxisSchema], name: 'sensor2', inspector: true),
+      // await Isar.open([Data9AxisSchema], name: 'sensor3', inspector: true),
+      // await Isar.open([Data9AxisSchema], name: 'sensor4', inspector: true),
+    ];
+  }
 
   void discoveryDevice() async {
     Get.defaultDialog(
@@ -32,13 +46,19 @@ class HomeController extends GetxController {
 
           IMU sensor = IMU(
             device: device,
-            onData: (IMU sensor, Data9Axis? data) {
+            onData: (IMU sensor, Data9Axis? data) async {
               if (data == null) return;
 
               int index = devices.indexOf(sensor);
 
               datas[index].removeAt(0);
               datas[index].add(data);
+
+              if (recordState.value == true) {
+                await isars[index].writeTxn(() async {
+                  await isars[index].data9Axis.put(data);
+                });
+              }
             },
             disConnect: (IMU sensor) {
               removeDevice(sensor);
@@ -49,6 +69,7 @@ class HomeController extends GetxController {
             Get.back();
             devices.add(sensor);
             datas.add(RxList.generate(bufferLength, (index) => Data9Axis()));
+            isars.add(await Isar.open([Data9AxisSchema], name: 'sensor${isars.length + 1}', inspector: true));
           } else {
             Get.back();
 
@@ -106,6 +127,20 @@ class HomeController extends GetxController {
       recordState.value = false;
     } else if (value == false) {
       recordState.value = null;
+
+      int? minLength;
+      for (var isar in isars) {
+        minLength ??= isar.data9Axis.countSync();
+        if (minLength > isar.data9Axis.countSync()) {
+          minLength = isar.data9Axis.countSync();
+        }
+
+        printInfo(info: '${isar.name} : ${isar.data9Axis.countSync()}');
+      }
+
+      for (var isar in isars) {
+        isar.writeTxn(() async => await isar.data9Axis.clear());
+      }
     }
   }
 }

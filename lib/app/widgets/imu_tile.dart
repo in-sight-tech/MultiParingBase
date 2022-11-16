@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:multiparingbase/app/data/models/data_9axis.dart';
+import 'package:multiparingbase/app/data/collections/data_9axis.dart';
 
 class IMUTile extends StatefulWidget {
   final String title;

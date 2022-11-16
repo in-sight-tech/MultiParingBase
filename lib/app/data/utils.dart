@@ -5,12 +5,18 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 class Utils {
-  static Future<bool> toCSV() async {
-    List<String> header = [];
-
+  static Future<bool> toCSV(Map<String, dynamic> args) async {
     List<List<String>> rows = [];
 
-    header.addAll(['time', 'acc.x', 'acc.y', 'acc.z']);
+    rows.add(['#HEADER']);
+    rows.add(['#TITLES']);
+    rows.add(['']);
+    rows.add(['#UNITS']);
+    rows.add(['']);
+    rows.add(['#DATATYPES']);
+    rows.add(['Huge']);
+    rows.add(['#DATA']);
+
     rows.add(['time', 'acc.x', 'acc.y', 'acc.z']);
     for (int i = 0; i < 1000000; i++) {
       rows.add([i.toString(), '0', '0', '1']);
@@ -21,10 +27,9 @@ class Utils {
     DateTime now = DateTime.now();
     String formattedData = DateFormat('yyyyMMddHHmmss').format(now);
 
-    final bytes = utf8.encode(csvData);
-    Uint8List bytes2 = Uint8List.fromList(bytes);
+    Uint8List bytes = Uint8List.fromList(utf8.encode(csvData));
     MimeType type = MimeType.CSV;
-    await FileSaver.instance.saveAs('$formattedData.csv', bytes2, 'csv', type);
+    await FileSaver.instance.saveAs('$formattedData.csv', bytes, 'csv', type);
     return true;
   }
 }
