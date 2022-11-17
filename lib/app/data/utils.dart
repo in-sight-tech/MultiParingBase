@@ -1,20 +1,26 @@
 import 'dart:convert';
 import 'package:csv/csv.dart';
-import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
-import 'package:intl/intl.dart';
+import 'package:isar/isar.dart';
+import 'package:multiparingbase/app/data/collections/data_9axis.dart';
 
 class Utils {
-  static Future<bool> toCSV(Map<String, dynamic> args) async {
+  static Future<Uint8List?> convertCSV(int numberOfDevices) async {
+    List<Isar> isars = [];
+
+    for (int i = 0; i < numberOfDevices; i++) {
+      isars.add(await Isar.open([Data9AxisSchema], name: 'sensor${i + 1}', inspector: true));
+    }
+
+    int? isarMinLength;
+    for (Isar isar in isars) {
+      isarMinLength ??= isar.data9Axis.countSync();
+      if (isarMinLength > isar.data9Axis.countSync()) {
+        isarMinLength = isar.data9Axis.countSync();
+      }
+    }
+
     List<List<String>> rows = [];
-
-    // if (minLength == null) return;
-    // printInfo(info: 'Min length is $minLength');
-
-    // List<String> intergratedData;
-    // for (int i = 0; i < minLength; i++) {
-
-    // }
 
     rows.add(['#HEADER']);
     rows.add(['#TITLES']);
@@ -25,19 +31,26 @@ class Utils {
     rows.add(['Huge']);
     rows.add(['#DATA']);
 
-    rows.add(['time', 'acc.x', 'acc.y', 'acc.z']);
-    for (int i = 0; i < 1000000; i++) {
-      rows.add([i.toString(), '0', '0', '1']);
+    if (isarMinLength == null) {
+      return null;
+    }
+
+    for (Isar isar in isars) {
+      rows[2].addAll(['', isar.name]);
+      rows[4].addAll(['s', 'mm']);
+      rows[6].addAll(['Double', 'Float']);
+      for (int i = 0; i < isarMinLength; i++) {
+        if (rows.length - 8 <= i) {
+          rows.add(<String>['${i + 1}']);
+        }
+        rows[i + 8].addAll([((isar.data9Axis.getSync(i + 1)!.time! / 1000).toStringAsFixed(2))]);
+      }
     }
 
     String csvData = const ListToCsvConverter().convert(rows);
 
-    DateTime now = DateTime.now();
-    String formattedData = DateFormat('yyyyMMddHHmmss').format(now);
-
     Uint8List bytes = Uint8List.fromList(utf8.encode(csvData));
-    MimeType type = MimeType.CSV;
-    await FileSaver.instance.saveAs('$formattedData.csv', bytes, 'csv', type);
-    return true;
+
+    return bytes;
   }
 }
