@@ -1,16 +1,14 @@
 # multiparingbase
 
-A new Flutter project.
+인사이트테크 Bluetooth Multi Paring Base Application
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+이 프로젝트는 인사이트테크 Bluetooth Multi Paring 앱들의 가장 기초적인 기능을 가진 앱입니다.
 
-A few resources to get you started if this is your first Flutter project:
+다음의 기능을 갖고 있습니다.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. BWT901CL 다중 연결
+2. 인사이트테크에서 개발한 센서 다중 연결
+3. 데이터 계측 및 저장
+4. 데이터 내보내기 (csv)
