@@ -7,4 +7,5 @@ abstract class Sensor {
   late int tick;
 
   connect();
+  dispose();
 }

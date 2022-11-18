@@ -61,6 +61,7 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
 
   bluetoothDiscovery() {
     isDiscovering = true;
+    results.clear();
     update();
 
     streamSubscription = FlutterBluetoothSerial.instance.startDiscovery().listen((r) {
@@ -127,21 +128,45 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-                  RadioListTile(
-                    value: SensorType.bwt901cl,
-                    groupValue: sensorTypeValue,
-                    title: const Text('BWT901CL'),
-                    onChanged: (value) => setState(() {
-                      sensorTypeValue = value;
-                    }),
+                  Card(
+                    child: RadioListTile(
+                      value: SensorType.bwt901cl,
+                      groupValue: sensorTypeValue,
+                      title: const Text('BWT901CL'),
+                      onChanged: (value) => setState(() {
+                        sensorTypeValue = value;
+                      }),
+                    ),
                   ),
-                  RadioListTile(
-                    value: SensorType.strainGauge,
-                    groupValue: sensorTypeValue,
-                    title: const Text('Strain Gauge'),
-                    onChanged: (value) => setState(() {
-                      sensorTypeValue = value;
-                    }),
+                  Card(
+                    child: RadioListTile(
+                      value: SensorType.strainGauge,
+                      groupValue: sensorTypeValue,
+                      title: const Text('Strain Gauge'),
+                      onChanged: (value) => setState(() {
+                        sensorTypeValue = value;
+                      }),
+                    ),
+                  ),
+                  Card(
+                    child: RadioListTile(
+                      value: SensorType.imu,
+                      groupValue: sensorTypeValue,
+                      title: const Text('IMU'),
+                      onChanged: (value) => setState(() {
+                        sensorTypeValue = value;
+                      }),
+                    ),
+                  ),
+                  Card(
+                    child: RadioListTile(
+                      value: SensorType.analog,
+                      groupValue: sensorTypeValue,
+                      title: const Text('Analog'),
+                      onChanged: (value) => setState(() {
+                        sensorTypeValue = value;
+                      }),
+                    ),
                   ),
                 ],
               ),
@@ -154,16 +179,22 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
               height: 280,
               child: ListView(
                 children: [
-                  ...results.map((r) => RadioListTile(
-                        value: r.device,
-                        groupValue: sensorValue,
-                        title: Text('${r.device.name}'),
-                        subtitle: Text(r.device.address),
-                        onChanged: (value) => setState(() {
-                          sensorValue = value;
-                        }),
+                  ...results.map((r) => Card(
+                        child: RadioListTile(
+                          value: r.device,
+                          groupValue: sensorValue,
+                          title: Text('${r.device.name}'),
+                          subtitle: Text(r.device.address),
+                          onChanged: (value) => setState(() {
+                            sensorValue = value;
+                          }),
+                        ),
                       )),
-                  if (isDiscovering) const Center(child: CircularProgressIndicator()),
+                  if (isDiscovering)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
                   if (!isDiscovering) TextButton(onPressed: bluetoothDiscovery, child: const Text('다시 검색'))
                 ],
               ),

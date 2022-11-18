@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
+import 'package:multiparingbase/app/widgets/app_drawer.dart';
 import 'package:multiparingbase/app/widgets/imu_setting_dialog.dart';
 import 'package:multiparingbase/app/widgets/imu_tile.dart';
 
@@ -22,6 +23,7 @@ class HomeView extends GetView<HomeController> {
               )),
         ],
       ),
+      drawer: const CustomAppDrawer(),
       body: Obx(() => ListView.builder(
             itemCount: controller.devices.length,
             itemBuilder: (context, index) {

@@ -35,6 +35,7 @@ class IMU extends Sensor {
     _timer?.cancel();
   }
 
+  @override
   Future<bool> connect() async {
     try {
       connection = await BluetoothConnection.toAddress(device.address);

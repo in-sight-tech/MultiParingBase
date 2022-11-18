@@ -5,4 +5,9 @@ class StrainGauge extends Sensor {
   connect() {
     return false;
   }
+
+  @override
+  dispose() {
+    throw UnimplementedError();
+  }
 }

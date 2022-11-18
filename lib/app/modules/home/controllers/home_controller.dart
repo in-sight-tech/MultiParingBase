@@ -21,6 +21,15 @@ class HomeController extends GetxController {
 
   final List<Isar> isars = <Isar>[];
 
+  @override
+  void onClose() {
+    super.onClose();
+
+    for (Sensor device in devices) {
+      disconnect(device);
+    }
+  }
+
   void discoveryDevice() async {
     Get.dialog(
       Dialog(
@@ -87,11 +96,11 @@ class HomeController extends GetxController {
     );
   }
 
-  void disconnect(IMU sensor) {
+  void disconnect(Sensor sensor) {
     sensor.dispose();
   }
 
-  void removeDevice(IMU sensor) {
+  void removeDevice(Sensor sensor) {
     int index = devices.indexOf(sensor);
 
     try {
