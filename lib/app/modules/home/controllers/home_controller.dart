@@ -111,6 +111,12 @@ class HomeController extends GetxController {
     }
   }
 
+  void recordStart() {
+    for (Sensor device in devices) {
+      device.start();
+    }
+  }
+
   void setUnit(IMU sensor, String unit) {
     sensor.setUnit(unit);
   }
@@ -130,6 +136,7 @@ class HomeController extends GetxController {
   void switchRecordState(bool? value) async {
     if (value == null) {
       recordState.value = true;
+      recordStart();
     } else if (value == true) {
       recordState.value = false;
     } else if (value == false) {

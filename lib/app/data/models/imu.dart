@@ -17,6 +17,7 @@ class IMU extends Sensor {
 
   int? opCode;
   int? predictTime;
+  int? biasTime;
 
   String accelerationUnit = '9.8m/s²';
 
@@ -30,6 +31,7 @@ class IMU extends Sensor {
     tick = 1000 ~/ frequency;
   }
 
+  @override
   void dispose() {
     connection?.dispose();
     _timer?.cancel();
@@ -93,13 +95,16 @@ class IMU extends Sensor {
     } else if (opCode! > bytes.getInt8(1)) {
       signal.time ??= predictTime;
       if (signal.time == predictTime) {
-        predictTime = predictTime! + tick;
         onData?.call(this, signal);
+        predictTime = predictTime! + tick;
       } else {
-        while (predictTime! <= signal.time!) {
+        while (predictTime! < signal.time!) {
           onData?.call(this, Data9Axis(time: predictTime));
           predictTime = predictTime! + tick;
         }
+
+        onData?.call(this, signal);
+        predictTime = predictTime! + tick;
       }
 
       signal = Data9Axis();
@@ -108,8 +113,9 @@ class IMU extends Sensor {
     switch (bytes.getInt8(1)) {
       case 0x50:
         opCode = 0x50;
-        signal.time = bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little);
-        predictTime ??= signal.time;
+        biasTime ??= bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little);
+        signal.time = bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little) - biasTime!;
+        predictTime ??= signal.time! + tick;
         break;
       case 0x51:
         if (opCode == null) return;
@@ -216,6 +222,13 @@ class IMU extends Sensor {
     }
 
     return checksum == packets.last;
+  }
+
+  @override
+  void start() {
+    biasTime = null;
+    opCode = null;
+    predictTime = null;
   }
 }
 

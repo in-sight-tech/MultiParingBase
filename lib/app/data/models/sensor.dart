@@ -6,6 +6,7 @@ abstract class Sensor {
   int frequency = 200;
   late int tick;
 
-  connect();
-  dispose();
+  Future<bool> connect();
+  void start();
+  void dispose();
 }

@@ -43,7 +43,7 @@ class Utils {
         if (rows.length - 8 <= i) {
           rows.add(<String>['${i + 1}']);
         }
-        rows[i + 8].addAll([((isar.data9Axis.getSync(i + 1)!.time! / 1000).toStringAsFixed(2))]);
+        rows[i + 8].addAll([((isar.data9Axis.getSync(i + 1)!.time! / 1000).toStringAsFixed(3))]);
       }
     }
 
