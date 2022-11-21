@@ -3,7 +3,7 @@ import 'package:isar/isar.dart';
 part 'data_9axis.g.dart';
 
 @collection
-class Data9Axis {
+class SensorSignal {
   Id id = Isar.autoIncrement;
 
   int? time;
@@ -26,14 +26,14 @@ class Data9Axis {
 
   double? yaw;
 
-  Data9Axis({this.time});
+  SensorSignal({this.time});
 
   @override
   String toString() {
     return '$time, $ax, $ay, $az, $wx, $wy, $wz, $roll, $pitch, $yaw';
   }
 
-  factory Data9Axis.copyWith(Data9Axis copy) => Data9Axis()
+  factory SensorSignal.copyWith(SensorSignal copy) => SensorSignal()
     ..time = copy.time
     ..ax = copy.ax
     ..ay = copy.ay

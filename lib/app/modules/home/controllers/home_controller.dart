@@ -16,7 +16,7 @@ class HomeController extends GetxController {
 
   final bufferLength = 400;
   final devices = RxList<Sensor>();
-  final datas = <RxList<Data9Axis>>[];
+  final datas = <RxList<SensorSignal>>[];
   final recordState = RxnBool(null);
 
   final List<Isar> isars = <Isar>[];
@@ -49,7 +49,7 @@ class HomeController extends GetxController {
             if (type == SensorType.bwt901cl) {
               sensor = IMU(
                 device: device,
-                onData: (IMU sensor, Data9Axis? data) async {
+                onData: (IMU sensor, SensorSignal? data) async {
                   if (data == null) return;
 
                   int index = devices.indexOf(sensor);
@@ -58,8 +58,8 @@ class HomeController extends GetxController {
                   datas[index].add(data);
 
                   if (recordState.value == true) {
-                    await isars[index].writeTxn(() async {
-                      await isars[index].data9Axis.put(data);
+                    await isars[index].writeTxnSync(() {
+                      isars[index].data9Axis.putSync(data);
                     });
                   }
                 },
@@ -74,7 +74,7 @@ class HomeController extends GetxController {
             if (await sensor.connect()) {
               Get.back();
               devices.add(sensor);
-              datas.add(RxList.generate(bufferLength, (index) => Data9Axis()));
+              datas.add(RxList.generate(bufferLength, (index) => SensorSignal()));
               isars.add(await Isar.open([Data9AxisSchema], name: 'sensor${isars.length + 1}', inspector: true));
             } else {
               Get.back();

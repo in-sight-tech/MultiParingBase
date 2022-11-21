@@ -10,7 +10,7 @@ part of 'data_9axis.dart';
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters
 
 extension GetData9AxisCollection on Isar {
-  IsarCollection<Data9Axis> get data9Axis => this.collection();
+  IsarCollection<SensorSignal> get data9Axis => this.collection();
 }
 
 const Data9AxisSchema = CollectionSchema(
@@ -83,7 +83,7 @@ const Data9AxisSchema = CollectionSchema(
 );
 
 int _data9AxisEstimateSize(
-  Data9Axis object,
+  SensorSignal object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -92,7 +92,7 @@ int _data9AxisEstimateSize(
 }
 
 void _data9AxisSerialize(
-  Data9Axis object,
+  SensorSignal object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
@@ -109,13 +109,13 @@ void _data9AxisSerialize(
   writer.writeDouble(offsets[9], object.yaw);
 }
 
-Data9Axis _data9AxisDeserialize(
+SensorSignal _data9AxisDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Data9Axis(
+  final object = SensorSignal(
     time: reader.readLongOrNull(offsets[5]),
   );
   object.ax = reader.readDoubleOrNull(offsets[0]);
@@ -163,30 +163,28 @@ P _data9AxisDeserializeProp<P>(
   }
 }
 
-Id _data9AxisGetId(Data9Axis object) {
+Id _data9AxisGetId(SensorSignal object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _data9AxisGetLinks(Data9Axis object) {
+List<IsarLinkBase<dynamic>> _data9AxisGetLinks(SensorSignal object) {
   return [];
 }
 
-void _data9AxisAttach(IsarCollection<dynamic> col, Id id, Data9Axis object) {
+void _data9AxisAttach(IsarCollection<dynamic> col, Id id, SensorSignal object) {
   object.id = id;
 }
 
-extension Data9AxisQueryWhereSort
-    on QueryBuilder<Data9Axis, Data9Axis, QWhere> {
-  QueryBuilder<Data9Axis, Data9Axis, QAfterWhere> anyId() {
+extension Data9AxisQueryWhereSort on QueryBuilder<SensorSignal, SensorSignal, QWhere> {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension Data9AxisQueryWhere
-    on QueryBuilder<Data9Axis, Data9Axis, QWhereClause> {
-  QueryBuilder<Data9Axis, Data9Axis, QAfterWhereClause> idEqualTo(Id id) {
+extension Data9AxisQueryWhere on QueryBuilder<SensorSignal, SensorSignal, QWhereClause> {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -195,7 +193,7 @@ extension Data9AxisQueryWhere
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterWhereClause> idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -217,8 +215,7 @@ extension Data9AxisQueryWhere
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -226,8 +223,7 @@ extension Data9AxisQueryWhere
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -235,7 +231,7 @@ extension Data9AxisQueryWhere
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterWhereClause> idBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -252,9 +248,8 @@ extension Data9AxisQueryWhere
   }
 }
 
-extension Data9AxisQueryFilter
-    on QueryBuilder<Data9Axis, Data9Axis, QFilterCondition> {
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> axIsNull() {
+extension Data9AxisQueryFilter on QueryBuilder<SensorSignal, SensorSignal, QFilterCondition> {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> axIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'ax',
@@ -262,7 +257,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> axIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> axIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'ax',
@@ -270,7 +265,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> axEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> axEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -283,7 +278,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> axGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> axGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -298,7 +293,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> axLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> axLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -313,7 +308,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> axBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> axBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -332,7 +327,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> ayIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> ayIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'ay',
@@ -340,7 +335,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> ayIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> ayIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'ay',
@@ -348,7 +343,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> ayEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> ayEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -361,7 +356,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> ayGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> ayGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -376,7 +371,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> ayLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> ayLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -391,7 +386,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> ayBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> ayBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -410,7 +405,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> azIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> azIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'az',
@@ -418,7 +413,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> azIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> azIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'az',
@@ -426,7 +421,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> azEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> azEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -439,7 +434,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> azGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> azGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -454,7 +449,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> azLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> azLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -469,7 +464,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> azBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> azBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -488,8 +483,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> idEqualTo(
-      Id value) {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -498,7 +492,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -511,7 +505,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> idLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -524,7 +518,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> idBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -541,7 +535,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> pitchIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> pitchIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'pitch',
@@ -549,7 +543,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> pitchIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> pitchIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'pitch',
@@ -557,7 +551,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> pitchEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> pitchEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -570,7 +564,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> pitchGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> pitchGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -585,7 +579,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> pitchLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> pitchLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -600,7 +594,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> pitchBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> pitchBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -619,7 +613,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> rollIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> rollIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'roll',
@@ -627,7 +621,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> rollIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> rollIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'roll',
@@ -635,7 +629,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> rollEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> rollEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -648,7 +642,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> rollGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> rollGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -663,7 +657,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> rollLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> rollLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -678,7 +672,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> rollBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> rollBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -697,7 +691,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> timeIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> timeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'time',
@@ -705,7 +699,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> timeIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> timeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'time',
@@ -713,8 +707,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> timeEqualTo(
-      int? value) {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> timeEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'time',
@@ -723,7 +716,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> timeGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> timeGreaterThan(
     int? value, {
     bool include = false,
   }) {
@@ -736,7 +729,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> timeLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> timeLessThan(
     int? value, {
     bool include = false,
   }) {
@@ -749,7 +742,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> timeBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> timeBetween(
     int? lower,
     int? upper, {
     bool includeLower = true,
@@ -766,7 +759,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wxIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wxIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'wx',
@@ -774,7 +767,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wxIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wxIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'wx',
@@ -782,7 +775,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wxEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wxEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -795,7 +788,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wxGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wxGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -810,7 +803,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wxLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wxLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -825,7 +818,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wxBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wxBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -844,7 +837,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wyIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wyIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'wy',
@@ -852,7 +845,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wyIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wyIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'wy',
@@ -860,7 +853,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wyEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wyEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -873,7 +866,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wyGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wyGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -888,7 +881,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wyLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wyLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -903,7 +896,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wyBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wyBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -922,7 +915,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wzIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wzIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'wz',
@@ -930,7 +923,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wzIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wzIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'wz',
@@ -938,7 +931,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wzEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wzEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -951,7 +944,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wzGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wzGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -966,7 +959,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wzLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wzLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -981,7 +974,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> wzBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> wzBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1000,7 +993,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> yawIsNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> yawIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
         property: r'yaw',
@@ -1008,7 +1001,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> yawIsNotNull() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> yawIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNotNull(
         property: r'yaw',
@@ -1016,7 +1009,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> yawEqualTo(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> yawEqualTo(
     double? value, {
     double epsilon = Query.epsilon,
   }) {
@@ -1029,7 +1022,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> yawGreaterThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> yawGreaterThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1044,7 +1037,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> yawLessThan(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> yawLessThan(
     double? value, {
     bool include = false,
     double epsilon = Query.epsilon,
@@ -1059,7 +1052,7 @@ extension Data9AxisQueryFilter
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterFilterCondition> yawBetween(
+  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition> yawBetween(
     double? lower,
     double? upper, {
     bool includeLower = true,
@@ -1079,395 +1072,390 @@ extension Data9AxisQueryFilter
   }
 }
 
-extension Data9AxisQueryObject
-    on QueryBuilder<Data9Axis, Data9Axis, QFilterCondition> {}
+extension Data9AxisQueryObject on QueryBuilder<SensorSignal, SensorSignal, QFilterCondition> {}
 
-extension Data9AxisQueryLinks
-    on QueryBuilder<Data9Axis, Data9Axis, QFilterCondition> {}
+extension Data9AxisQueryLinks on QueryBuilder<SensorSignal, SensorSignal, QFilterCondition> {}
 
-extension Data9AxisQuerySortBy on QueryBuilder<Data9Axis, Data9Axis, QSortBy> {
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByAx() {
+extension Data9AxisQuerySortBy on QueryBuilder<SensorSignal, SensorSignal, QSortBy> {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByAx() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ax', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByAxDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByAxDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ax', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByAy() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByAy() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ay', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByAyDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByAyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ay', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByAz() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByAz() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'az', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByAzDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByAzDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'az', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByPitch() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByPitch() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pitch', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByPitchDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByPitchDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pitch', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByRoll() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByRoll() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'roll', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByRollDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByRollDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'roll', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByTime() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'time', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByTimeDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'time', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByWx() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByWx() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wx', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByWxDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByWxDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wx', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByWy() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByWy() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wy', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByWyDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByWyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wy', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByWz() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByWz() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wz', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByWzDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByWzDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wz', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByYaw() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByYaw() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'yaw', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> sortByYawDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> sortByYawDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'yaw', Sort.desc);
     });
   }
 }
 
-extension Data9AxisQuerySortThenBy
-    on QueryBuilder<Data9Axis, Data9Axis, QSortThenBy> {
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByAx() {
+extension Data9AxisQuerySortThenBy on QueryBuilder<SensorSignal, SensorSignal, QSortThenBy> {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByAx() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ax', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByAxDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByAxDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ax', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByAy() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByAy() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ay', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByAyDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByAyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ay', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByAz() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByAz() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'az', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByAzDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByAzDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'az', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenById() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByPitch() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByPitch() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pitch', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByPitchDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByPitchDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pitch', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByRoll() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByRoll() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'roll', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByRollDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByRollDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'roll', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByTime() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'time', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByTimeDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'time', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByWx() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByWx() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wx', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByWxDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByWxDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wx', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByWy() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByWy() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wy', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByWyDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByWyDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wy', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByWz() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByWz() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wz', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByWzDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByWzDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'wz', Sort.desc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByYaw() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByYaw() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'yaw', Sort.asc);
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QAfterSortBy> thenByYawDesc() {
+  QueryBuilder<SensorSignal, SensorSignal, QAfterSortBy> thenByYawDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'yaw', Sort.desc);
     });
   }
 }
 
-extension Data9AxisQueryWhereDistinct
-    on QueryBuilder<Data9Axis, Data9Axis, QDistinct> {
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByAx() {
+extension Data9AxisQueryWhereDistinct on QueryBuilder<SensorSignal, SensorSignal, QDistinct> {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByAx() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ax');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByAy() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByAy() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ay');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByAz() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByAz() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'az');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByPitch() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByPitch() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'pitch');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByRoll() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByRoll() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'roll');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByTime() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'time');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByWx() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByWx() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'wx');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByWy() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByWy() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'wy');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByWz() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByWz() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'wz');
     });
   }
 
-  QueryBuilder<Data9Axis, Data9Axis, QDistinct> distinctByYaw() {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctByYaw() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'yaw');
     });
   }
 }
 
-extension Data9AxisQueryProperty
-    on QueryBuilder<Data9Axis, Data9Axis, QQueryProperty> {
-  QueryBuilder<Data9Axis, int, QQueryOperations> idProperty() {
+extension Data9AxisQueryProperty on QueryBuilder<SensorSignal, SensorSignal, QQueryProperty> {
+  QueryBuilder<SensorSignal, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> axProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> axProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'ax');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> ayProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> ayProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'ay');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> azProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> azProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'az');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> pitchProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> pitchProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'pitch');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> rollProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> rollProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'roll');
     });
   }
 
-  QueryBuilder<Data9Axis, int?, QQueryOperations> timeProperty() {
+  QueryBuilder<SensorSignal, int?, QQueryOperations> timeProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'time');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> wxProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> wxProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'wx');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> wyProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> wyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'wy');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> wzProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> wzProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'wz');
     });
   }
 
-  QueryBuilder<Data9Axis, double?, QQueryOperations> yawProperty() {
+  QueryBuilder<SensorSignal, double?, QQueryOperations> yawProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'yaw');
     });

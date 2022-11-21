@@ -8,7 +8,7 @@ class IMUTile extends StatefulWidget {
   final String unit;
   final Function()? onSetting;
   final Function()? onClose;
-  final List<Data9Axis> signal;
+  final List<SensorSignal> signal;
 
   const IMUTile({
     super.key,

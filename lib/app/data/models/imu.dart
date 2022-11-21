@@ -8,9 +8,9 @@ import 'package:multiparingbase/app/data/models/sensor.dart';
 class IMU extends Sensor {
   BluetoothDevice device;
   BluetoothConnection? connection;
-  late Data9Axis signal;
+  late SensorSignal signal;
 
-  Function(IMU, Data9Axis?)? onData;
+  Function(IMU, SensorSignal?)? onData;
   Function(IMU)? disConnect;
 
   Timer? _timer;
@@ -91,7 +91,7 @@ class IMU extends Sensor {
 
   void calSignal(ByteData bytes) async {
     if (opCode == null) {
-      signal = Data9Axis();
+      signal = SensorSignal();
     } else if (opCode! > bytes.getInt8(1)) {
       signal.time ??= predictTime;
       if (signal.time == predictTime) {
@@ -99,7 +99,7 @@ class IMU extends Sensor {
         predictTime = predictTime! + tick;
       } else {
         while (predictTime! < signal.time!) {
-          onData?.call(this, Data9Axis(time: predictTime));
+          onData?.call(this, SensorSignal(time: predictTime));
           predictTime = predictTime! + tick;
         }
 
@@ -107,7 +107,7 @@ class IMU extends Sensor {
         predictTime = predictTime! + tick;
       }
 
-      signal = Data9Axis();
+      signal = SensorSignal();
     }
 
     switch (bytes.getInt8(1)) {
