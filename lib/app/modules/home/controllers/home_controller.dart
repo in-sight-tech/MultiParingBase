@@ -5,7 +5,8 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
-import 'package:multiparingbase/app/data/collections/data_9axis.dart';
+import 'package:multiparingbase/app/data/collections/sensor_information.dart';
+import 'package:multiparingbase/app/data/collections/sensor_signal.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/strain_gauge.dart';
 import 'package:multiparingbase/app/data/utils.dart';
@@ -16,10 +17,16 @@ class HomeController extends GetxController {
 
   final bufferLength = 400;
   final devices = RxList<Sensor>();
-  final datas = <RxList<SensorSignal>>[];
+  final datas = <RxList<List<double?>>>[];
   final recordState = RxnBool(null);
+  late Isar isar;
 
-  final List<Isar> isars = <Isar>[];
+  @override
+  void onInit() {
+    super.onInit();
+
+    isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
+  }
 
   @override
   void onClose() {
@@ -49,17 +56,15 @@ class HomeController extends GetxController {
             if (type == SensorType.bwt901cl) {
               sensor = IMU(
                 device: device,
-                onData: (IMU sensor, SensorSignal? data) async {
-                  if (data == null) return;
-
+                onData: (IMU sensor, List<double?> data) async {
                   int index = devices.indexOf(sensor);
 
                   datas[index].removeAt(0);
                   datas[index].add(data);
 
                   if (recordState.value == true) {
-                    await isars[index].writeTxnSync(() {
-                      isars[index].data9Axis.putSync(data);
+                    isar.writeTxnSync(() {
+                      isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: data));
                     });
                   }
                 },
@@ -74,8 +79,7 @@ class HomeController extends GetxController {
             if (await sensor.connect()) {
               Get.back();
               devices.add(sensor);
-              datas.add(RxList.generate(bufferLength, (index) => SensorSignal()));
-              isars.add(await Isar.open([Data9AxisSchema], name: 'sensor${isars.length + 1}', inspector: true));
+              datas.add(RxList.generate(bufferLength, (index) => <double?>[null, null, null, null, null, null, null, null, null]));
             } else {
               Get.back();
 
@@ -144,9 +148,7 @@ class HomeController extends GetxController {
 
       Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
 
-      for (var isar in isars) {
-        isar.writeTxn(() async => await isar.data9Axis.clear());
-      }
+      isar.writeTxn(() => isar.sensorSignals.clear());
 
       if (bytes == null) return;
 

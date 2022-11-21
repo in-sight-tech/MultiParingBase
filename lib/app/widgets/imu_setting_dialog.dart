@@ -55,7 +55,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
               const Text('Unit : '),
               CupertinoSlidingSegmentedControl<String>(
                 children: const {
-                  '9.8m/s²': Text('9.8m/s²'),
+                  'm/s²': Text('m/s²'),
                   'g': Text('g'),
                 },
                 groupValue: unitValue,

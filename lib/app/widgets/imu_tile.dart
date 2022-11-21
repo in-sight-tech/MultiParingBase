@@ -1,14 +1,15 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:multiparingbase/app/data/collections/data_9axis.dart';
+import 'package:multiparingbase/app/data/models/imu.dart';
 
 class IMUTile extends StatefulWidget {
   final String title;
   final String unit;
   final Function()? onSetting;
   final Function()? onClose;
-  final List<SensorSignal> signal;
+  final List<List<double?>> signal;
+  final List<String> contents;
 
   const IMUTile({
     super.key,
@@ -17,6 +18,7 @@ class IMUTile extends StatefulWidget {
     required this.signal,
     this.onSetting,
     required this.unit,
+    required this.contents,
   });
 
   @override
@@ -27,104 +29,158 @@ class _IMUTileState extends State<IMUTile> {
   int? value = 0;
   late String unit;
 
-  List<FlSpot> get ax => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].ax == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].ax!,
-            )
-      ];
+  List<FlSpot>? get ax {
+    int index = widget.contents.indexOf('acc.x');
 
-  List<FlSpot> get ay => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].ay == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].ay!,
-            )
-      ];
+    if (index == -1) return null;
 
-  List<FlSpot> get az => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].az == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].az!,
-            )
-      ];
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
 
-  List<FlSpot> get wx => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].wx == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].wx!,
-            )
-      ];
+  List<FlSpot>? get ay {
+    int index = widget.contents.indexOf('acc.y');
 
-  List<FlSpot> get wy => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].wy == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].wy!,
-            )
-      ];
+    if (index == -1) return null;
 
-  List<FlSpot> get wz => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].wz == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].wz!,
-            )
-      ];
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
 
-  List<FlSpot> get roll => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].roll == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].roll!,
-            )
-      ];
+  List<FlSpot>? get az {
+    int index = widget.contents.indexOf('acc.z');
 
-  List<FlSpot> get pitch => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].pitch == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].pitch!,
-            )
-      ];
+    if (index == -1) return null;
 
-  List<FlSpot> get yaw => [
-        for (int i = 0; i < widget.signal.length; i++)
-          if (widget.signal[i].yaw == null)
-            FlSpot.nullSpot
-          else
-            FlSpot(
-              i.toDouble(),
-              widget.signal[i].yaw!,
-            )
-      ];
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
+
+  List<FlSpot>? get wx {
+    int index = widget.contents.indexOf('w.x');
+
+    if (index == -1) return null;
+
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
+
+  List<FlSpot>? get wy {
+    int index = widget.contents.indexOf('w.y');
+
+    if (index == -1) return null;
+
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
+
+  List<FlSpot>? get wz {
+    int index = widget.contents.indexOf('w.z');
+
+    if (index == -1) return null;
+
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
+
+  List<FlSpot>? get roll {
+    int index = widget.contents.indexOf('roll');
+
+    if (index == -1) return null;
+
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
+
+  List<FlSpot>? get pitch {
+    int index = widget.contents.indexOf('pitch');
+
+    if (index == -1) return null;
+
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
+
+  List<FlSpot>? get yaw {
+    int index = widget.contents.indexOf('yaw');
+
+    if (index == -1) return null;
+
+    return [
+      for (int i = 0; i < widget.signal.length; i++)
+        if (widget.signal[i][index] == null)
+          FlSpot.nullSpot
+        else
+          FlSpot(
+            i.toDouble(),
+            widget.signal[i][index]!,
+          )
+    ];
+  }
 
   @override
   initState() {

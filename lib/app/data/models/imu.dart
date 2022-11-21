@@ -1,16 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:multiparingbase/app/data/collections/data_9axis.dart';
 import 'package:multiparingbase/app/data/models/sensor.dart';
 
 class IMU extends Sensor {
-  BluetoothDevice device;
-  BluetoothConnection? connection;
-  late SensorSignal signal;
-
-  Function(IMU, SensorSignal?)? onData;
+  Function(IMU, List<double?>)? onData;
   Function(IMU)? disConnect;
 
   Timer? _timer;
@@ -19,15 +13,21 @@ class IMU extends Sensor {
   int? predictTime;
   int? biasTime;
 
-  String accelerationUnit = '9.8m/s²';
+  String accelerationUnit = 'm/s²';
 
   ReturnContents returnContents = ReturnContents();
 
+  List<String> names = ['time', 'acc.x', 'acc.y', 'acc.z'];
+  List<String> units = ['s', 'm/s^2', 'm/s^2', 'm/s^2'];
+  List<double?> signals = [null, null, null, null];
+
   IMU({
-    required this.device,
+    required device,
     this.onData,
     this.disConnect,
   }) {
+    super.device = device;
+
     tick = 1000 ~/ frequency;
   }
 
@@ -91,61 +91,92 @@ class IMU extends Sensor {
 
   void calSignal(ByteData bytes) async {
     if (opCode == null) {
-      signal = SensorSignal();
+      signals = [null];
+
+      if (returnContents.acceleration) {
+        signals.addAll([null, null, null]);
+      }
+      if (returnContents.angularVelocity) {
+        signals.addAll([null, null, null]);
+      }
+      if (returnContents.angle) {
+        signals.addAll([null, null, null]);
+      }
     } else if (opCode! > bytes.getInt8(1)) {
-      signal.time ??= predictTime;
-      if (signal.time == predictTime) {
-        onData?.call(this, signal);
+      signals[0] ??= predictTime!.toDouble();
+
+      if (signals[0] == predictTime) {
+        onData?.call(this, signals);
         predictTime = predictTime! + tick;
       } else {
-        while (predictTime! < signal.time!) {
-          onData?.call(this, SensorSignal(time: predictTime));
+        while (predictTime! < signals[0]!) {
+          signals[0] = predictTime!.toDouble();
+          onData?.call(this, signals);
           predictTime = predictTime! + tick;
         }
 
-        onData?.call(this, signal);
+        onData?.call(this, signals);
         predictTime = predictTime! + tick;
       }
 
-      signal = SensorSignal();
+      signals = [null];
+
+      if (returnContents.acceleration) {
+        signals.addAll([null, null, null]);
+      }
+      if (returnContents.angularVelocity) {
+        signals.addAll([null, null, null]);
+      }
+      if (returnContents.angle) {
+        signals.addAll([null, null, null]);
+      }
     }
 
     switch (bytes.getInt8(1)) {
       case 0x50:
         opCode = 0x50;
         biasTime ??= bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little);
-        signal.time = bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little) - biasTime!;
-        predictTime ??= signal.time! + tick;
+        signals[0] = (bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little) - biasTime!).toDouble();
+        predictTime ??= signals[0]!.toInt() + tick;
         break;
       case 0x51:
         if (opCode == null) return;
         opCode = 0x51;
 
-        signal.ax = (bytes.getInt16(2, Endian.little) / 32768) * 16;
-        signal.ay = (bytes.getInt16(4, Endian.little) / 32768) * 16;
-        signal.az = (bytes.getInt16(6, Endian.little) / 32768) * 16;
+        int index = names.indexOf('acc.x');
+        if (index == -1) return;
 
-        if (accelerationUnit == '9.8m/s²') {
-          signal.ax = signal.ax! * 9.80665;
-          signal.ay = signal.ay! * 9.80665;
-          signal.az = signal.az! * 9.80665;
+        signals[index] = (bytes.getInt16(2, Endian.little) / 32768) * 16;
+        signals[index + 1] = (bytes.getInt16(4, Endian.little) / 32768) * 16;
+        signals[index + 2] = (bytes.getInt16(6, Endian.little) / 32768) * 16;
+
+        if (accelerationUnit == 'm/s²') {
+          signals[index] = signals[index]! * 9.80665;
+          signals[index + 1] = signals[index + 1]! * 9.80665;
+          signals[index + 2] = signals[index + 2]! * 9.80665;
         }
         break;
       case 0x52:
         if (opCode == null) return;
         opCode = 0x52;
 
-        signal.wx = (bytes.getInt16(2, Endian.little) / 32768) * 2000;
-        signal.wy = (bytes.getInt16(4, Endian.little) / 32768) * 2000;
-        signal.wz = (bytes.getInt16(6, Endian.little) / 32768) * 2000;
+        int index = names.indexOf('w.x');
+        if (index == -1) return;
+
+        signals[index] = (bytes.getInt16(2, Endian.little) / 32768) * 2000;
+        signals[index + 1] = (bytes.getInt16(4, Endian.little) / 32768) * 2000;
+        signals[index + 2] = (bytes.getInt16(6, Endian.little) / 32768) * 2000;
         break;
       case 0x53:
         if (opCode == null) return;
         opCode = 0x53;
 
-        signal.roll = (bytes.getInt16(2, Endian.little) / 32768) * 180;
-        signal.pitch = (bytes.getInt16(4, Endian.little) / 32768) * 180;
-        signal.yaw = (bytes.getInt16(6, Endian.little) / 32768) * 180;
+        int index = names.indexOf('roll');
+        if (index == -1) return;
+
+        signals[index] = (bytes.getInt16(2, Endian.little) / 32768) * 180;
+        signals[index + 1] = (bytes.getInt16(4, Endian.little) / 32768) * 180;
+        signals[index + 2] = (bytes.getInt16(6, Endian.little) / 32768) * 180;
         break;
     }
   }
@@ -194,9 +225,29 @@ class IMU extends Sensor {
   Future<bool> setReturnContent(ReturnContents rc) async {
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
+
+    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
+    await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000);
 
     returnContents = rc;
+
+    names = ['time'];
+    units = ['s'];
+
+    if (returnContents.acceleration) {
+      names.addAll(['acc.x', 'acc.y', 'acc.z']);
+      units.addAll(['m/s^2', 'm/s^2', 'm/s^2']);
+    }
+    if (returnContents.angularVelocity) {
+      names.addAll(['w.x', 'w.y', 'w.z']);
+      units.addAll(['°/s', '°/s', '°/s']);
+    }
+    if (returnContents.angle) {
+      names.addAll(['roll', 'pitch', 'yaw']);
+      units.addAll(['°', '°', '°']);
+    }
 
     return true;
   }

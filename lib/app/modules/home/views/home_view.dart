@@ -45,7 +45,7 @@ class HomeView extends GetView<HomeController> {
                       ),
                     ),
                     onClose: () => controller.disconnect(sensor),
-                    // ignore: invalid_use_of_protected_member
+                    contents: sensor.names,
                     signal: controller.datas[index].value,
                   ));
             },
