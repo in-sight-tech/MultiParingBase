@@ -35,7 +35,7 @@ class Utils {
 
     for (SensorInformation information in informations) {
       for (int i = 1; i < information.names.length; i++) {
-        rows[2].add(information.names[i]);
+        rows[2].add('${information.id}@${information.names[i]}');
         rows[4].add(information.units[i]);
         rows[6].add('Float');
       }
