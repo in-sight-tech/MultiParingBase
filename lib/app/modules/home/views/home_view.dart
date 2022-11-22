@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
+import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/widgets/app_drawer.dart';
-import 'package:multiparingbase/app/widgets/imu_setting_dialog.dart';
-import 'package:multiparingbase/app/widgets/imu_tile.dart';
+import 'package:multiparingbase/app/widgets/bwt901cl_setting_dialog.dart';
+import 'package:multiparingbase/app/widgets/bwt901cl_tile.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -27,9 +28,9 @@ class HomeView extends GetView<HomeController> {
       body: Obx(() => ListView.builder(
             itemCount: controller.devices.length,
             itemBuilder: (context, index) {
-              IMU sensor = controller.devices[index] as IMU;
+              BWT901CL sensor = controller.devices[index] as BWT901CL;
 
-              return Obx(() => IMUTile(
+              return Obx(() => BWT901CLTile(
                     title: sensor.device.name ?? '',
                     unit: sensor.accelerationUnit,
                     onSetting: () => Get.defaultDialog(
@@ -45,8 +46,7 @@ class HomeView extends GetView<HomeController> {
                       ),
                     ),
                     onClose: () => controller.disconnect(sensor),
-                    contents: sensor.names,
-                    signal: controller.datas[index].value,
+                    signal: controller.datas[index].map((e) => e as BWT901CLSignal).toList(),
                   ));
             },
           )),

@@ -1,6 +1,6 @@
-import 'package:multiparingbase/app/data/models/sensor.dart';
+import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 
-class StrainGauge extends Sensor {
+class StrainGauge extends SensorBase {
   @override
   Future<bool> connect() async {
     return false;

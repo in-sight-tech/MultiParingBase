@@ -18,7 +18,7 @@ class SensorInformation {
 
   SensorInformation({required this.id, required this.type, required this.units, required this.names});
 
-  int fastHash(String string) {
+  static int fastHash(String string) {
     var hash = 0xcbf29ce484222325;
 
     var i = 0;
@@ -31,5 +31,10 @@ class SensorInformation {
     }
 
     return hash;
+  }
+
+  @override
+  String toString() {
+    return 'Id: $id\nType: $type\nUnits: $units\nNames: $names';
   }
 }

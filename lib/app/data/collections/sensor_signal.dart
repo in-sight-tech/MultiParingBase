@@ -11,4 +11,9 @@ class SensorSignal {
   List<double?> signals;
 
   SensorSignal({required this.sensorId, required this.signals});
+
+  @override
+  String toString() {
+    return 'Id: $sensorId\nSignals: $signals';
+  }
 }

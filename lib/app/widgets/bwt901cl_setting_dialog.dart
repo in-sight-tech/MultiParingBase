@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:multiparingbase/app/data/models/imu.dart';
+import 'package:multiparingbase/app/data/models/sensor_types/bwt901cl.dart';
 
 class IMUSettingDialog extends StatefulWidget {
   final String unit;

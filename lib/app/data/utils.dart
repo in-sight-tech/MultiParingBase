@@ -8,44 +8,55 @@ import 'package:multiparingbase/app/data/collections/sensor_signal.dart';
 class Utils {
   static Future<Uint8List?> convertCSV(int count) async {
     Isar isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
-    int sensorCounts = isar.sensorInformations.countSync();
+    List<SensorInformation> informations = isar.sensorInformations.where().findAllSync();
 
-    // for (int i = 0; i < sensorCounts; i++) {}
-
-    // int? isarMinLength;
-    // for (Isar isar in isars) {
-    //   isarMinLength ??= isar.data9Axis.countSync();
-    //   if (isarMinLength > isar.data9Axis.countSync()) {
-    //     isarMinLength = isar.data9Axis.countSync();
-    //   }
-    // }
+    int? signalMinLength;
+    for (SensorInformation information in informations) {
+      signalMinLength ??= isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync().length;
+      if (signalMinLength > isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync().length) {
+        signalMinLength = isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync().length;
+      }
+    }
 
     List<List<String>> rows = [];
 
     rows.add(['#HEADER']);
     rows.add(['#TITLES']);
-    rows.add(['']);
+    rows.add(['', 'time']);
     rows.add(['#UNITS']);
-    rows.add(['']);
+    rows.add(['', 's']);
     rows.add(['#DATATYPES']);
-    rows.add(['Huge']);
+    rows.add(['Huge', 'Float']);
     rows.add(['#DATA']);
 
-    // if (isarMinLength == null) {
-    //   return null;
-    // }
+    if (signalMinLength == null) {
+      return null;
+    }
 
-    // for (Isar isar in isars) {
-    //   rows[2].addAll(['', isar.name]);
-    //   rows[4].addAll(['s', 'mm']);
-    //   rows[6].addAll(['Double', 'Float']);
-    //   for (int i = 0; i < isarMinLength; i++) {
-    //     if (rows.length - 8 <= i) {
-    //       rows.add(<String>['${i + 1}']);
-    //     }
-    //     rows[i + 8].addAll([((isar.data9Axis.getSync(i + 1)!.time! / 1000).toStringAsFixed(3))]);
-    //   }
-    // }
+    for (SensorInformation information in informations) {
+      for (int i = 1; i < information.names.length; i++) {
+        rows[2].add(information.names[i]);
+        rows[4].add(information.units[i]);
+        rows[6].add('Float');
+      }
+
+      List<SensorSignal> signal = isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync();
+      for (int i = 0; i < signalMinLength; i++) {
+        if (rows.length - 8 <= i) {
+          rows.add(<String>['${i + 1}', ((signal[i].signals[0] ?? 0) / 1000).toStringAsFixed(3)]);
+        }
+
+        if (signal[i].signals.length == information.names.length) {
+          for (int j = 1; j < information.names.length; j++) {
+            rows[i + 8].add(signal[i].signals.elementAt(j)?.toStringAsFixed(3) ?? '');
+          }
+        } else {
+          for (int j = 1; j < information.names.length; j++) {
+            rows[i + 8].add('');
+          }
+        }
+      }
+    }
 
     String csvData = const ListToCsvConverter().convert(rows);
 
