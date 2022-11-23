@@ -8,7 +8,7 @@ class BWT901CL extends SensorBase {
   late BWT901CLSignal signal;
 
   Function(BWT901CL, BWT901CLSignal)? onData;
-  Function(BWT901CL)? disConnect;
+  Function(BWT901CL)? dispose;
 
   Timer? _timer;
 
@@ -23,7 +23,7 @@ class BWT901CL extends SensorBase {
   BWT901CL({
     required BluetoothDevice device,
     this.onData,
-    this.disConnect,
+    this.dispose,
   }) {
     super.device = device;
     tick = 1000 ~/ frequency;
@@ -69,7 +69,7 @@ class BWT901CL extends SensorBase {
           buffer.addByte(byte);
         }
       }).onDone(() {
-        disConnect?.call(this);
+        dispose?.call(this);
       });
 
       _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -228,16 +228,6 @@ class BWT901CL extends SensorBase {
   Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0}) async {
     connection?.output.add(Uint8List.fromList([0xFF, 0xAA, addr, data & 0xff, (data >> 8) & 0xff]));
     await Future.delayed(Duration(milliseconds: delayMs));
-  }
-
-  bool isValiable(Uint8List packets) {
-    int checksum = 0x00;
-
-    for (int i = 0; i < packets.length - 1; i++) {
-      checksum = (checksum + packets[i]) & 0xff;
-    }
-
-    return checksum == packets.last;
   }
 
   @override
