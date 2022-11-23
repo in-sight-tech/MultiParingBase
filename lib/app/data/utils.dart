@@ -22,7 +22,7 @@ class Utils {
 
     rows.add(['#HEADER']);
     rows.add(['#TITLES']);
-    rows.add(['', 'time']);
+    rows.add(['', '']);
     rows.add(['#UNITS']);
     rows.add(['', 's']);
     rows.add(['#DATATYPES']);
