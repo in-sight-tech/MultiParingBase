@@ -80,9 +80,14 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
                     DropdownMenuItem(value: 100, alignment: AlignmentDirectional.centerEnd, child: Text('100 Hz')),
                     DropdownMenuItem(value: 200, alignment: AlignmentDirectional.centerEnd, child: Text('200 Hz')),
                   ],
-                  onChanged: (value) {
+                  onChanged: (value) async {
                     setState(() => returnRateValue = value);
-                    widget.sensor.setReturnRate(value!);
+
+                    showProgressDialog();
+
+                    await widget.sensor.setReturnRate(value!);
+
+                    if (mounted) Navigator.of(context).pop();
                   },
                 ),
               ],
@@ -97,27 +102,34 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
                   label: const Text('Accelertaion'),
                   selected: returnContentsValue.acceleration,
                   selectedColor: Colors.lightBlue,
-                  onSelected: (value) {
+                  onSelected: (value) async {
                     setState(() => returnContentsValue.acceleration = value);
-                    widget.sensor.setReturnContent(returnContentsValue);
+                    showProgressDialog();
+                    await widget.sensor.setReturnContent(returnContentsValue);
+
+                    if (mounted) Navigator.of(context).pop();
                   },
                 ),
                 ChoiceChip(
                   label: const Text('Angular velocity'),
                   selected: returnContentsValue.angularVelocity,
                   selectedColor: Colors.lightBlue,
-                  onSelected: (value) {
+                  onSelected: (value) async {
                     setState(() => returnContentsValue.angularVelocity = value);
-                    widget.sensor.setReturnContent(returnContentsValue);
+                    showProgressDialog();
+                    await widget.sensor.setReturnContent(returnContentsValue);
+                    if (mounted) Navigator.of(context).pop();
                   },
                 ),
                 ChoiceChip(
                   label: const Text('Angle'),
                   selected: returnContentsValue.angle,
                   selectedColor: Colors.lightBlue,
-                  onSelected: (value) {
+                  onSelected: (value) async {
                     setState(() => returnContentsValue.angle = value);
-                    widget.sensor.setReturnContent(returnContentsValue);
+                    showProgressDialog();
+                    await widget.sensor.setReturnContent(returnContentsValue);
+                    if (mounted) Navigator.of(context).pop();
                   },
                 ),
               ],
@@ -126,12 +138,37 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
             Row(
               children: [
                 const Text('Calibrate : '),
-                CupertinoButton(onPressed: widget.sensor.calibrate, child: const Text('Acceleration')),
+                CupertinoButton(
+                    onPressed: () async {
+                      showProgressDialog();
+                      await widget.sensor.calibrate();
+                      if (mounted) Navigator.of(context).pop();
+                    },
+                    child: const Text('Acceleration')),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  showProgressDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: const SizedBox(
+            width: 200,
+            height: 100,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      },
     );
   }
 }
