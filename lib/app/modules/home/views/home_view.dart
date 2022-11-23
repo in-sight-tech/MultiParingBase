@@ -38,18 +38,13 @@ class HomeView extends GetView<HomeController> {
             if (_.devices[index] is BWT901CL) {
               BWT901CL sensor = _.devices[index] as BWT901CL;
 
-              return Obx(() => BWT901CLTile(
-                    title: sensor.device.name ?? '',
-                    unit: sensor.accelerationUnit,
-                    onSetting: () => Get.defaultDialog(
-                      title: sensor.device.name ?? '',
-                      content: BWT901ClSettingDialog(
-                        sensor: sensor,
-                      ),
-                    ),
-                    onClose: sensor.dispose,
-                    signal: _.datas[index].map((e) => e as BWT901CLSignal).toList(),
-                  ));
+              return GetBuilder<HomeController>(
+                id: 'chart',
+                builder: (_) => BWT901CLTile(
+                  sensor: sensor,
+                  signal: _.datas[index].map((e) => e as BWT901CLSignal).toList(),
+                ),
+              );
             } else {
               return Container();
             }
