@@ -2,31 +2,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/bwt901cl.dart';
 
-class IMUSettingDialog extends StatefulWidget {
-  final String unit;
-  final Function(String) setUnit;
-  final int returnRate;
-  final Function(int) setReturnRate;
-  final Function() calibrate;
-  final ReturnContents returnContents;
-  final Function(ReturnContents) setReturnContents;
+class BWT901ClSettingDialog extends StatefulWidget {
+  final BWT901CL sensor;
 
-  const IMUSettingDialog({
+  const BWT901ClSettingDialog({
     super.key,
-    required this.unit,
-    required this.setUnit,
-    required this.returnRate,
-    required this.setReturnRate,
-    required this.returnContents,
-    required this.setReturnContents,
-    required this.calibrate,
+    required this.sensor,
   });
 
   @override
-  State<IMUSettingDialog> createState() => _IMUSettingDialogState();
+  State<BWT901ClSettingDialog> createState() => _BWT901ClSettingDialogState();
 }
 
-class _IMUSettingDialogState extends State<IMUSettingDialog> {
+class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
   String? unitValue;
 
   int? returnRateValue;
@@ -37,9 +25,9 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
   void initState() {
     super.initState();
 
-    unitValue = widget.unit;
-    returnRateValue = widget.returnRate;
-    returnContentsValue = widget.returnContents;
+    unitValue = widget.sensor.accelerationUnit;
+    returnRateValue = widget.sensor.frequency;
+    returnContentsValue = widget.sensor.returnContents;
   }
 
   @override
@@ -61,7 +49,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
                 groupValue: unitValue,
                 onValueChanged: (String? newValue) {
                   setState(() => unitValue = newValue);
-                  widget.setUnit.call(unitValue!);
+                  widget.sensor.setUnit(unitValue!);
                 },
               )
             ],
@@ -86,7 +74,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
                 ],
                 onChanged: (value) {
                   setState(() => returnRateValue = value);
-                  widget.setReturnRate.call(value!);
+                  widget.sensor.setReturnRate(value!);
                 },
               ),
             ],
@@ -103,7 +91,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
                 selectedColor: Colors.lightBlue,
                 onSelected: (value) {
                   setState(() => returnContentsValue.acceleration = value);
-                  widget.setReturnContents.call(returnContentsValue);
+                  widget.sensor.setReturnContent(returnContentsValue);
                 },
               ),
               ChoiceChip(
@@ -112,7 +100,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
                 selectedColor: Colors.lightBlue,
                 onSelected: (value) {
                   setState(() => returnContentsValue.angularVelocity = value);
-                  widget.setReturnContents.call(returnContentsValue);
+                  widget.sensor.setReturnContent(returnContentsValue);
                 },
               ),
               ChoiceChip(
@@ -121,7 +109,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
                 selectedColor: Colors.lightBlue,
                 onSelected: (value) {
                   setState(() => returnContentsValue.angle = value);
-                  widget.setReturnContents.call(returnContentsValue);
+                  widget.sensor.setReturnContent(returnContentsValue);
                 },
               ),
             ],
@@ -130,7 +118,7 @@ class _IMUSettingDialogState extends State<IMUSettingDialog> {
           Row(
             children: [
               const Text('Calibrate : '),
-              CupertinoButton(onPressed: widget.calibrate, child: const Text('Acceleration')),
+              CupertinoButton(onPressed: widget.sensor.calibrate, child: const Text('Acceleration')),
             ],
           ),
         ],
