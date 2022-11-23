@@ -1,22 +1,18 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
+import 'package:multiparingbase/app/widgets/bwt901cl_setting_dialog.dart';
 
 class BWT901CLTile extends StatefulWidget {
-  final String title;
-  final String unit;
-  final Function()? onSetting;
-  final Function()? onClose;
+  final BWT901CL sensor;
   final List<BWT901CLSignal> signal;
 
   const BWT901CLTile({
     super.key,
-    required this.title,
-    this.onClose,
     required this.signal,
-    this.onSetting,
-    required this.unit,
+    required this.sensor,
   });
 
   @override
@@ -130,7 +126,7 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
   initState() {
     super.initState();
 
-    unit = widget.unit;
+    unit = widget.sensor.accelerationUnit;
   }
 
   @override
@@ -138,7 +134,7 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
     super.didUpdateWidget(oldWidget);
 
     if (value == 0) {
-      unit = widget.unit;
+      unit = widget.sensor.accelerationUnit;
     } else if (value == 1) {
       unit = '°/s';
     } else if (value == 2) {
@@ -157,12 +153,20 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
             child: Row(
               children: [
                 Text(
-                  widget.title,
+                  widget.sensor.device.name ?? '',
                   style: const TextStyle(fontSize: 25),
                 ),
                 const Spacer(),
-                IconButton(onPressed: widget.onSetting?.call, icon: const Icon(Icons.settings)),
-                CloseButton(onPressed: widget.onClose?.call),
+                IconButton(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => BWT901ClSettingDialog(
+                      sensor: widget.sensor,
+                    ),
+                  ),
+                  icon: const Icon(Icons.settings),
+                ),
+                CloseButton(onPressed: widget.sensor.dispose),
               ],
             ),
           ),
