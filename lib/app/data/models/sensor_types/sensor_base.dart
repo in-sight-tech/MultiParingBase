@@ -15,4 +15,14 @@ abstract class SensorBase {
   void start();
   void disconnect();
   Future<bool> setReturnRate(int frequency);
+
+  bool isValiable(Uint8List packets) {
+    int checksum = 0x00;
+
+    for (int i = 0; i < packets.length - 1; i++) {
+      checksum = (checksum + packets[i]) & 0xff;
+    }
+
+    return checksum == packets.last;
+  }
 }
