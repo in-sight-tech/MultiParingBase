@@ -47,70 +47,61 @@ class HomeController extends GetxController {
     }
   }
 
-  void discoveryDevice() async {
-    Get.dialog(
-      Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: BluetoothDiscovery(
-          onTap: (SensorType type, BluetoothDevice device) async {
-            Get.back();
+  void connectBluetoothDevice(SensorType type, BluetoothDevice device) async {
+    Get.back();
 
-            Get.defaultDialog(
-              title: '연결 중',
-              content: const CircularProgressIndicator(),
-              barrierDismissible: false,
-            );
-
-            late SensorBase sensor;
-
-            if (type == SensorType.bwt901cl) {
-              sensor = BWT901CL(
-                device: device,
-                onData: (BWT901CL sensor, BWT901CLSignal signal) async {
-                  int index = devices.indexOf(sensor);
-
-                  datas[index].removeAt(0);
-                  datas[index].add(signal);
-
-                  if (recordState ?? false) {
-                    isar.writeTxnSync(() {
-                      isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
-                    });
-                  }
-                },
-                disConnect: (BWT901CL sensor) {
-                  removeDevice(sensor);
-                },
-              );
-
-              if (await sensor.connect()) {
-                Get.back();
-                devices.add(sensor);
-                datas.add(RxList.generate(bufferLength, (index) => BWT901CLSignal()));
-
-                update(['deviceList']);
-              } else {
-                Get.back();
-
-                Get.defaultDialog(
-                  title: '연결 실패',
-                  content: const Icon(
-                    Icons.error_outline,
-                    size: 40,
-                    color: Colors.red,
-                  ),
-                );
-
-                Future.delayed(const Duration(seconds: 3), Get.back);
-              }
-            } else if (type == SensorType.strainGauge) {
-              sensor = StrainGauge();
-            } else if (type == SensorType.imu) {
-            } else if (type == SensorType.analog) {}
-          },
-        ),
-      ),
+    Get.defaultDialog(
+      title: '연결 중',
+      content: const CircularProgressIndicator(),
+      barrierDismissible: false,
     );
+
+    late SensorBase sensor;
+
+    if (type == SensorType.bwt901cl) {
+      sensor = BWT901CL(
+        device: device,
+        onData: (BWT901CL sensor, BWT901CLSignal signal) async {
+          int index = devices.indexOf(sensor);
+
+          datas[index].removeAt(0);
+          datas[index].add(signal);
+
+          if (recordState ?? false) {
+            isar.writeTxnSync(() {
+              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
+            });
+          }
+        },
+        disConnect: (BWT901CL sensor) {
+          removeDevice(sensor);
+        },
+      );
+
+      if (await sensor.connect()) {
+        Get.back();
+        devices.add(sensor);
+        datas.add(RxList.generate(bufferLength, (index) => BWT901CLSignal()));
+
+        update(['deviceList']);
+      } else {
+        Get.back();
+
+        Get.defaultDialog(
+          title: '연결 실패',
+          content: const Icon(
+            Icons.error_outline,
+            size: 40,
+            color: Colors.red,
+          ),
+        );
+
+        Future.delayed(const Duration(seconds: 3), Get.back);
+      }
+    } else if (type == SensorType.strainGauge) {
+      sensor = StrainGauge();
+    } else if (type == SensorType.imu) {
+    } else if (type == SensorType.analog) {}
   }
 
   void removeDevice(SensorBase sensor) {
