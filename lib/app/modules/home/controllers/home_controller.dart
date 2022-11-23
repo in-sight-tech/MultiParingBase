@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,27 +15,35 @@ import 'package:multiparingbase/app/data/utils.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 
 class HomeController extends GetxController {
-  static HomeController get to => Get.find<HomeController>();
+  static HomeController get instance => Get.find<HomeController>();
 
   final bufferLength = 400;
-  final devices = RxList<SensorBase>();
+  final devices = <SensorBase>[];
   final datas = <RxList<SignalBase>>[];
-  final recordState = RxnBool(null);
+
+  bool? recordState;
   late Isar isar;
+
+  late Timer _timer;
 
   @override
   void onInit() {
     super.onInit();
 
     isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
+
+    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+      if (devices.isNotEmpty) update(['chart']);
+    });
   }
 
   @override
   void onClose() {
     super.onClose();
 
+    _timer.cancel();
     for (SensorBase device in devices) {
-      disconnect(device);
+      device.dispose();
     }
   }
 
@@ -62,7 +72,7 @@ class HomeController extends GetxController {
                   datas[index].removeAt(0);
                   datas[index].add(signal);
 
-                  if (recordState.isTrue ?? false) {
+                  if (recordState ?? false) {
                     isar.writeTxnSync(() {
                       isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
                     });
@@ -77,6 +87,8 @@ class HomeController extends GetxController {
                 Get.back();
                 devices.add(sensor);
                 datas.add(RxList.generate(bufferLength, (index) => BWT901CLSignal()));
+
+                update(['deviceList']);
               } else {
                 Get.back();
 
@@ -93,15 +105,12 @@ class HomeController extends GetxController {
               }
             } else if (type == SensorType.strainGauge) {
               sensor = StrainGauge();
-            }
+            } else if (type == SensorType.imu) {
+            } else if (type == SensorType.analog) {}
           },
         ),
       ),
     );
-  }
-
-  void disconnect(SensorBase sensor) {
-    sensor.dispose();
   }
 
   void removeDevice(SensorBase sensor) {
@@ -110,6 +119,8 @@ class HomeController extends GetxController {
     try {
       devices.remove(sensor);
       datas.removeAt(index);
+
+      update(['deviceList']);
     } catch (e) {
       printError(info: e.toString());
     }
@@ -121,25 +132,10 @@ class HomeController extends GetxController {
     }
   }
 
-  void setUnit(BWT901CL sensor, String unit) {
-    sensor.setUnit(unit);
-  }
-
-  void setReturnRate(BWT901CL sensor, int frequency) {
-    sensor.setReturnRate(frequency);
-  }
-
-  void calibrate(BWT901CL sensor) {
-    sensor.calibrate();
-  }
-
-  void setReturnContents(BWT901CL sensor, ReturnContents returnContents) {
-    sensor.setReturnContent(returnContents);
-  }
-
   void switchRecordState(bool? value) async {
     if (value == null) {
-      recordState.value = true;
+      recordState = true;
+      update(['fab', 'bluetoothIcon']);
 
       isar.writeTxnSync(() {
         isar.sensorSignals.clearSync();
@@ -161,9 +157,11 @@ class HomeController extends GetxController {
 
       recordStart();
     } else if (value == true) {
-      recordState.value = false;
+      recordState = false;
+      update(['fab', 'bluetoothIcon']);
     } else if (value == false) {
-      recordState.value = null;
+      recordState = null;
+      update(['fab', 'bluetoothIcon']);
 
       Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
 
