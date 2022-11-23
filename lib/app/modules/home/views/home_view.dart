@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/widgets/app_drawer.dart';
+import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 import 'package:multiparingbase/app/widgets/bwt901cl_setting_dialog.dart';
 import 'package:multiparingbase/app/widgets/bwt901cl_tile.dart';
 import 'package:multiparingbase/app/widgets/custom_floating_action_button.dart';
@@ -23,7 +24,14 @@ class HomeView extends GetView<HomeController> {
           GetBuilder<HomeController>(
             id: 'bluetoothIcon',
             builder: (_) => IconButton(
-              onPressed: controller.recordState == null ? _.discoveryDevice : null,
+              onPressed: controller.recordState == null
+                  ? () => Get.dialog(
+                        Dialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          child: BluetoothDiscovery(onTap: _.connectBluetoothDevice),
+                        ),
+                      )
+                  : null,
               icon: const Icon(Icons.bluetooth_searching),
             ),
           ),
