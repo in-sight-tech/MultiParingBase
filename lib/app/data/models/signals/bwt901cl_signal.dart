@@ -35,4 +35,9 @@ class BWT901CLSignal extends SignalBase {
 
     return list;
   }
+
+  @override
+  String toString() {
+    return '$time, $ax, $ay, $az, $wx, $wy, $wz, $roll, $pitch, $yaw';
+  }
 }

@@ -12,6 +12,8 @@ class StrainGauge extends SensorBase {
   int? predictTime;
   int? biasTime;
 
+  String unit = 'mm';
+
   StrainGauge({
     required BluetoothDevice device,
     this.onData,

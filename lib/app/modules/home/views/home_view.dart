@@ -5,9 +5,9 @@ import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/widgets/app_drawer.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
-import 'package:multiparingbase/app/widgets/bwt901cl_setting_dialog.dart';
 import 'package:multiparingbase/app/widgets/bwt901cl_tile.dart';
 import 'package:multiparingbase/app/widgets/custom_floating_action_button.dart';
+import 'package:multiparingbase/app/widgets/strain_gauge_tile.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -47,7 +47,7 @@ class HomeView extends GetView<HomeController> {
               BWT901CL sensor = _.devices[index] as BWT901CL;
 
               return GetBuilder<HomeController>(
-                id: 'chart',
+                id: 'tile',
                 builder: (_) => BWT901CLTile(
                   sensor: sensor,
                   signal: _.datas[index].map((e) => e as BWT901CLSignal).toList(),
@@ -55,10 +55,12 @@ class HomeView extends GetView<HomeController> {
               );
             } else if (_.devices[index] is StrainGauge) {
               StrainGauge sensor = _.devices[index] as StrainGauge;
-              return ListTile(
-                title: Text(sensor.device.name ?? ''),
-                trailing: CloseButton(
-                  onPressed: sensor.disconnect,
+
+              return GetBuilder<HomeController>(
+                id: 'tile',
+                builder: (_) => StrainGaugeTile(
+                  sensor: sensor,
+                  signal: _.datas[index].map((e) => e as StrainGaugeSignal).toList(),
                 ),
               );
             } else {

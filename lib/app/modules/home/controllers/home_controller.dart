@@ -33,7 +33,7 @@ class HomeController extends GetxController {
     isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
 
     _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
-      if (devices.isNotEmpty) update(['chart']);
+      if (devices.isNotEmpty) update(['tile']);
     });
   }
 
