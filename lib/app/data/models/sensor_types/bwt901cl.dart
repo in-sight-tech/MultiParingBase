@@ -30,7 +30,7 @@ class BWT901CL extends SensorBase {
   }
 
   @override
-  void dispose() {
+  void disconnect() {
     connection?.dispose();
     _timer?.cancel();
   }

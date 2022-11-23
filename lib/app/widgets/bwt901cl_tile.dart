@@ -166,7 +166,7 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
                   ),
                   icon: const Icon(Icons.settings),
                 ),
-                CloseButton(onPressed: widget.sensor.dispose),
+                CloseButton(onPressed: widget.sensor.disconnect),
               ],
             ),
           ),

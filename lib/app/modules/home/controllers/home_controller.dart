@@ -43,7 +43,7 @@ class HomeController extends GetxController {
 
     _timer.cancel();
     for (SensorBase device in devices) {
-      device.dispose();
+      device.disconnect();
     }
   }
 

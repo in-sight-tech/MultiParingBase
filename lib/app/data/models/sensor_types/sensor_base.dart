@@ -13,5 +13,5 @@ abstract class SensorBase {
 
   Future<bool> connect();
   void start();
-  void dispose();
+  void disconnect();
 }

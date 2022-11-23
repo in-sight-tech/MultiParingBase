@@ -7,7 +7,7 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  void dispose() {}
+  void disconnect() {}
 
   @override
   void start() {}
