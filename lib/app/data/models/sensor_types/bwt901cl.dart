@@ -155,10 +155,15 @@ class BWT901CL extends SensorBase {
   }
 
   Future<bool> calibrate() async {
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 50);
-    await writeReg(addr: 0x01, data: 0x0001, delayMs: 3050);
-    await writeReg(addr: 0x01, data: 0x0000, delayMs: 3100);
-    await writeReg(addr: 0x00, data: 0x0000);
+    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
+    await writeReg(addr: 0x01, data: 0x0001, delayMs: 3000);
+    await writeReg(addr: 0x01, data: 0x0000, delayMs: 100);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
+
+    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
+    await writeReg(addr: 0x01, data: 0x0001, delayMs: 3000);
+    await writeReg(addr: 0x01, data: 0x0000, delayMs: 100);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
     return true;
   }
@@ -184,7 +189,11 @@ class BWT901CL extends SensorBase {
 
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x03, data: frequencyCode[frequency], delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
+
+    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
+    await writeReg(addr: 0x03, data: frequencyCode[frequency], delayMs: 100);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
     return true;
   }
@@ -192,7 +201,11 @@ class BWT901CL extends SensorBase {
   Future<bool> setReturnContent(ReturnContents rc) async {
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
+
+    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
+    await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
     returnContents = rc;
 
@@ -202,7 +215,11 @@ class BWT901CL extends SensorBase {
   Future<bool> setBandwidth(int bandwidth) async {
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x1F, data: bandwidth, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
+
+    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
+    await writeReg(addr: 0x1F, data: bandwidth, delayMs: 100);
+    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
     return true;
   }
