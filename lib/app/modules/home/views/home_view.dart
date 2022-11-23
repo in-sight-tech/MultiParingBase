@@ -53,6 +53,14 @@ class HomeView extends GetView<HomeController> {
                   signal: _.datas[index].map((e) => e as BWT901CLSignal).toList(),
                 ),
               );
+            } else if (_.devices[index] is StrainGauge) {
+              StrainGauge sensor = _.devices[index] as StrainGauge;
+              return ListTile(
+                title: Text(sensor.device.name ?? ''),
+                trailing: CloseButton(
+                  onPressed: sensor.disconnect,
+                ),
+              );
             } else {
               return Container();
             }
