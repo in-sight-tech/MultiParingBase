@@ -33,11 +33,11 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 300,
         height: 400,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
