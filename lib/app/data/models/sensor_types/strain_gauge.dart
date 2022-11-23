@@ -11,4 +11,9 @@ class StrainGauge extends SensorBase {
 
   @override
   void start() {}
+
+  @override
+  Future<bool> setReturnRate(int frequency) {
+    throw UnimplementedError();
+  }
 }

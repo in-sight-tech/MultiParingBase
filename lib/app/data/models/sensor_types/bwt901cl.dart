@@ -168,6 +168,7 @@ class BWT901CL extends SensorBase {
     return true;
   }
 
+  @override
   Future<bool> setReturnRate(int frequency) async {
     Map<int, int> frequencyCode = {
       1: 0x03,

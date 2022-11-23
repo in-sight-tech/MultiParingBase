@@ -14,4 +14,5 @@ abstract class SensorBase {
   Future<bool> connect();
   void start();
   void disconnect();
+  Future<bool> setReturnRate(int frequency);
 }
