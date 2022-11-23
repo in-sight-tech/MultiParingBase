@@ -73,7 +73,7 @@ class HomeController extends GetxController {
             });
           }
         },
-        disConnect: (BWT901CL sensor) {
+        dispose: (BWT901CL sensor) {
           removeDevice(sensor);
         },
       );
@@ -99,13 +99,53 @@ class HomeController extends GetxController {
         Future.delayed(const Duration(seconds: 3), Get.back);
       }
     } else if (type == SensorType.strainGauge) {
-      sensor = StrainGauge();
+      sensor = StrainGauge(
+        device: device,
+        onData: (StrainGauge sensor, StrainGaugeSignal signal) async {
+          int index = devices.indexOf(sensor);
+
+          datas[index].removeAt(0);
+          datas[index].add(signal);
+
+          if (recordState ?? false) {
+            isar.writeTxnSync(() {
+              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
+            });
+          }
+        },
+        dispose: (StrainGauge sensor) {
+          removeDevice(sensor);
+        },
+      );
+
+      if (await sensor.connect()) {
+        Get.back();
+        devices.add(sensor);
+        datas.add(RxList.generate(bufferLength, (index) => StrainGaugeSignal()));
+
+        update(['deviceList']);
+      } else {
+        Get.back();
+
+        Get.defaultDialog(
+          title: '연결 실패',
+          content: const Icon(
+            Icons.error_outline,
+            size: 40,
+            color: Colors.red,
+          ),
+        );
+
+        Future.delayed(const Duration(seconds: 3), Get.back);
+      }
     } else if (type == SensorType.imu) {
     } else if (type == SensorType.analog) {}
   }
 
   void removeDevice(SensorBase sensor) {
     int index = devices.indexOf(sensor);
+
+    if (index == -1) throw 'Not Found';
 
     try {
       devices.remove(sensor);
@@ -141,6 +181,13 @@ class HomeController extends GetxController {
               type: SensorType.bwt901cl,
               units: device.returnContents.toUnitList(device.accelerationUnit),
               names: device.returnContents.toNameList(),
+            ));
+          } else if (device is StrainGauge) {
+            isar.sensorInformations.putSync(SensorInformation(
+              id: device.device.address,
+              type: SensorType.strainGauge,
+              units: ['s', 'v'],
+              names: ['time', 'value'],
             ));
           }
         }
