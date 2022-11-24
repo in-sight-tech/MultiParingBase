@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
+import 'package:multiparingbase/app/widgets/strain_gauge_setting_dialog.dart';
 
 class StrainGaugeTile extends StatelessWidget {
   final StrainGauge sensor;
@@ -28,15 +29,15 @@ class StrainGaugeTile extends StatelessWidget {
                   style: const TextStyle(fontSize: 25),
                 ),
                 const Spacer(),
-                // IconButton(
-                //   onPressed: () => showDialog(
-                //     context: context,
-                //     builder: (context) => BWT901ClSettingDialog(
-                //       sensor: widget.sensor,
-                //     ),
-                //   ),
-                // icon: const Icon(Icons.settings),
-                // ),
+                IconButton(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (context) => StrainGaugeSettingDialog(
+                      sensor: sensor,
+                    ),
+                  ),
+                icon: const Icon(Icons.settings),
+                ),
                 CloseButton(onPressed: sensor.disconnect),
               ],
             ),

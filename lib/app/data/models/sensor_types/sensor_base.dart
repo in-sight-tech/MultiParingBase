@@ -15,6 +15,7 @@ abstract class SensorBase {
   void start();
   void disconnect();
   Future<bool> setReturnRate(int frequency);
+  Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0});
 
   bool isValiable(Uint8List packets) {
     int checksum = 0x00;

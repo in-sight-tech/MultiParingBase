@@ -101,7 +101,15 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  Future<bool> setReturnRate(int frequency) {
-    throw UnimplementedError();
+  Future<bool> setReturnRate(int frequency) async {
+    await writeReg(addr: 0x03, data: frequency, delayMs: 100);
+
+    return true;
+  }
+
+  @override
+  Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0}) async {
+    connection?.output.add(Uint8List.fromList(['<'.codeUnitAt(0), 0x01, data & 0xff, (data >> 8) & 0xff, '>'.codeUnitAt(0)]));
+    await Future.delayed(Duration(milliseconds: delayMs));
   }
 }

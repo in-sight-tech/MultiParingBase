@@ -225,6 +225,7 @@ class BWT901CL extends SensorBase {
     return true;
   }
 
+  @override
   Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0}) async {
     connection?.output.add(Uint8List.fromList([0xFF, 0xAA, addr, data & 0xff, (data >> 8) & 0xff]));
     await Future.delayed(Duration(milliseconds: delayMs));
