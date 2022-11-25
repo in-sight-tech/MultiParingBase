@@ -85,7 +85,7 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
 
                     showProgressDialog();
 
-                    await widget.sensor.setReturnRate(value!);
+                    await widget.sensor.setSamplingRate(value!);
 
                     if (mounted) Navigator.of(context).pop();
                   },

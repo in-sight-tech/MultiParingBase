@@ -14,8 +14,8 @@ abstract class SensorBase {
   Future<bool> connect();
   void start();
   void disconnect();
-  Future<bool> setReturnRate(int frequency);
-  Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0});
+  Future<bool> setSamplingRate(int samplingRate);
+  Future<void> writeReg({required dynamic addr, required dynamic data, int delayMs = 0});
 
   bool isValiable(Uint8List packets) {
     int checksum = 0x00;
@@ -27,3 +27,5 @@ abstract class SensorBase {
     return checksum == packets.last;
   }
 }
+
+enum Mode { command, normal }

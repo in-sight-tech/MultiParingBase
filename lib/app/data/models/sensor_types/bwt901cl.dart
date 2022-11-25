@@ -42,7 +42,7 @@ class BWT901CL extends SensorBase {
 
       if (connection?.isConnected == false) throw 'Connect error';
 
-      await setReturnRate(frequency);
+      await setSamplingRate(frequency);
       await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
@@ -169,7 +169,7 @@ class BWT901CL extends SensorBase {
   }
 
   @override
-  Future<bool> setReturnRate(int frequency) async {
+  Future<bool> setSamplingRate(int samplingRate) async {
     Map<int, int> frequencyCode = {
       1: 0x03,
       2: 0x04,
@@ -226,7 +226,7 @@ class BWT901CL extends SensorBase {
   }
 
   @override
-  Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0}) async {
+  Future<void> writeReg({required dynamic addr, required dynamic data, int delayMs = 0}) async {
     connection?.output.add(Uint8List.fromList([0xFF, 0xAA, addr, data & 0xff, (data >> 8) & 0xff]));
     await Future.delayed(Duration(milliseconds: delayMs));
   }

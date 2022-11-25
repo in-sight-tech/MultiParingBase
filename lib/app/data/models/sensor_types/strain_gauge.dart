@@ -14,6 +14,8 @@ class StrainGauge extends SensorBase {
 
   String unit = 'mm';
 
+  Mode mode = Mode.normal;
+
   StrainGauge({
     required BluetoothDevice device,
     this.onData,
@@ -72,7 +74,7 @@ class StrainGauge extends SensorBase {
     signal.time = bytes.getInt32(1, Endian.little) - biasTime!;
     predictTime ??= signal.time! + tick;
 
-    signal.value = bytes.getInt16(5, Endian.little).toDouble();
+    signal.value = bytes.getInt16(5, Endian.little).toDouble() / 1240;
 
     if (predictTime == signal.time) {
       predictTime = predictTime! + tick;
@@ -101,15 +103,15 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  Future<bool> setReturnRate(int frequency) async {
-    await writeReg(addr: 0x03, data: frequency, delayMs: 100);
+  Future<bool> setSamplingRate(int samplingRate) async {
+    await writeReg(addr: "sr", data: samplingRate);
 
     return true;
   }
 
   @override
-  Future<void> writeReg({required int addr, required dynamic data, int delayMs = 0}) async {
-    connection?.output.add(Uint8List.fromList(['<'.codeUnitAt(0), 0x01, data & 0xff, (data >> 8) & 0xff, '>'.codeUnitAt(0)]));
+  Future<void> writeReg({required dynamic addr, required dynamic data, int delayMs = 0}) async {
+    connection?.output.add(Uint8List.fromList("<$addr,$data>".codeUnits));
     await Future.delayed(Duration(milliseconds: delayMs));
   }
 }
