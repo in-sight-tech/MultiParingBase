@@ -24,7 +24,7 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
               onPressed: () async {
                 widget.sensor.setSamplingRate(100);
               },
-              child: Text('adsf'),
+              child: const Text('adsf'),
             )
           ],
         ),

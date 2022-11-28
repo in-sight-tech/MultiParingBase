@@ -185,7 +185,7 @@ class BWT901CL extends SensorBase {
     opCode = null;
     predictTime = null;
 
-    this.frequency = frequency;
+    frequency = samplingRate;
     tick = 1000 ~/ frequency;
 
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
@@ -225,7 +225,6 @@ class BWT901CL extends SensorBase {
     return true;
   }
 
-  @override
   Future<void> writeReg({required dynamic addr, required dynamic data, int delayMs = 0}) async {
     connection?.output.add(Uint8List.fromList([0xFF, 0xAA, addr, data & 0xff, (data >> 8) & 0xff]));
     await Future.delayed(Duration(milliseconds: delayMs));
@@ -233,6 +232,13 @@ class BWT901CL extends SensorBase {
 
   @override
   void start() {
+    biasTime = null;
+    opCode = null;
+    predictTime = null;
+  }
+
+  @override
+  void stop() {
     biasTime = null;
     opCode = null;
     predictTime = null;

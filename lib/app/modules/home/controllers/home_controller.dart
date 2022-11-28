@@ -12,7 +12,6 @@ import 'package:multiparingbase/app/data/collections/sensor_signal.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/data/utils.dart';
-import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 
 class HomeController extends GetxController {
   static HomeController get instance => Get.find<HomeController>();

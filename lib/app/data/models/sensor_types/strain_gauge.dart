@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:intl/intl.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
@@ -34,27 +35,14 @@ class StrainGauge extends SensorBase {
       if (connection?.isConnected == false) throw 'Connect error';
 
       connection?.input?.listen((Uint8List packets) {
-        for (int byte in packets) {
-          if (byte != 0x55) {
-            buffer.addByte(byte);
-            continue;
-          }
-
-          if (buffer.length != 8) {
-            buffer.clear();
-            buffer.addByte(byte);
-            continue;
-          }
-
-          if (!isValiable(buffer.toBytes())) {
-            buffer.clear();
-            continue;
-          }
-
-          calSignal(buffer.takeBytes().buffer.asByteData());
-          buffer.clear();
-
-          buffer.addByte(byte);
+        switch (mode) {
+          case Mode.normal:
+            normalMode(packets);
+            break;
+          case Mode.command:
+            commandMode(packets);
+            break;
+          default:
         }
       }).onDone(() {
         dispose?.call(this);
@@ -67,6 +55,40 @@ class StrainGauge extends SensorBase {
     }
   }
 
+  void normalMode(Uint8List packets) {
+    for (int byte in packets) {
+      if (byte != 0x55) {
+        buffer.addByte(byte);
+        continue;
+      }
+
+      if (buffer.length != 8) {
+        buffer.clear();
+        buffer.addByte(byte);
+        continue;
+      }
+
+      if (!isValiable(buffer.toBytes())) {
+        buffer.clear();
+        continue;
+      }
+
+      calSignal(buffer.takeBytes().buffer.asByteData());
+      buffer.clear();
+
+      buffer.addByte(byte);
+    }
+  }
+
+  void commandMode(Uint8List packets) {
+    String.fromCharCodes(packets).endsWith('<');
+    if (String.fromCharCodes(packets) == '<sr>') {
+      writeReg(data: 'end');
+    } else if (String.fromCharCodes(packets) == '<record,true>') {
+    } else if (String.fromCharCodes(packets) == '<record,false>') {}
+    mode = Mode.normal;
+  }
+
   void calSignal(ByteData bytes) async {
     signal = StrainGaugeSignal();
 
@@ -74,7 +96,7 @@ class StrainGauge extends SensorBase {
     signal.time = bytes.getInt32(1, Endian.little) - biasTime!;
     predictTime ??= signal.time! + tick;
 
-    signal.value = bytes.getInt16(5, Endian.little).toDouble() / 1240;
+    signal.value = bytes.getInt16(5, Endian.little).toDouble() / 4096.0 * 3.3;
 
     if (predictTime == signal.time) {
       predictTime = predictTime! + tick;
@@ -97,21 +119,28 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  void start() {
-    biasTime = null;
-    predictTime = null;
-  }
-
-  @override
   Future<bool> setSamplingRate(int samplingRate) async {
-    await writeReg(addr: "sr", data: samplingRate);
+    await writeReg(data: 'sr,$samplingRate');
 
     return true;
   }
 
-  @override
-  Future<void> writeReg({required dynamic addr, required dynamic data, int delayMs = 0}) async {
-    connection?.output.add(Uint8List.fromList("<$addr,$data>".codeUnits));
+  Future<void> writeReg({required dynamic data, int delayMs = 0}) async {
+    mode = Mode.command;
+    connection?.output.add(Uint8List.fromList("<$data>".codeUnits));
     await Future.delayed(Duration(milliseconds: delayMs));
+  }
+
+  @override
+  void start() {
+    biasTime = null;
+    predictTime = null;
+
+    writeReg(data: 'record,${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}');
+  }
+
+  @override
+  void stop() {
+    writeReg(data: 'record,false');
   }
 }
