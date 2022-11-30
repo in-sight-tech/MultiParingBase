@@ -100,15 +100,16 @@ class HomeController extends GetxController {
     } else if (type == SensorType.strainGauge) {
       sensor = StrainGauge(
         device: device,
-        onData: (StrainGauge sensor, StrainGaugeSignal signal) async {
+        onRealTimeSignal: (StrainGauge sensor, StrainGaugeSignal signal) async {
           int index = devices.indexOf(sensor);
 
           datas[index].removeAt(0);
           datas[index].add(signal);
-
+        },
+        onData: (StrainGauge sensor, List<StrainGaugeSignal> signals) async {
           if (recordState ?? false) {
             isar.writeTxnSync(() {
-              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
+              isar.sensorSignals.putAllSync(signals.map((e) => SensorSignal(sensorId: sensor.device.address, signals: e.toList())).toList());
             });
           }
         },
@@ -162,6 +163,12 @@ class HomeController extends GetxController {
     }
   }
 
+  void recordStop() {
+    for (SensorBase device in devices) {
+      device.stop();
+    }
+  }
+
   void switchRecordState(bool? value) async {
     if (value == null) {
       recordState = true;
@@ -199,6 +206,7 @@ class HomeController extends GetxController {
     } else if (value == false) {
       recordState = null;
       update(['fab', 'bluetoothIcon']);
+      recordStop();
 
       Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
 

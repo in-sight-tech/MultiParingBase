@@ -26,7 +26,7 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
     super.initState();
 
     unitValue = widget.sensor.accelerationUnit;
-    returnRateValue = widget.sensor.frequency;
+    returnRateValue = widget.sensor.samplingRate;
     returnContentsValue = widget.sensor.returnContents;
   }
 
@@ -65,7 +65,7 @@ class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
             const SizedBox(height: 20),
             Row(
               children: [
-                const Text('Return Rate : '),
+                const Text('Sampling Rate : '),
                 DropdownButton<int>(
                   value: returnRateValue,
                   alignment: AlignmentDirectional.centerEnd,

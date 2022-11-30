@@ -26,7 +26,7 @@ class BWT901CL extends SensorBase {
     this.dispose,
   }) {
     super.device = device;
-    tick = 1000 ~/ frequency;
+    tick = 1000 ~/ samplingRate;
   }
 
   @override
@@ -42,7 +42,7 @@ class BWT901CL extends SensorBase {
 
       if (connection?.isConnected == false) throw 'Connect error';
 
-      await setSamplingRate(frequency);
+      await setSamplingRate(samplingRate);
       await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
@@ -185,15 +185,15 @@ class BWT901CL extends SensorBase {
     opCode = null;
     predictTime = null;
 
-    frequency = samplingRate;
-    tick = 1000 ~/ frequency;
+    samplingRate = samplingRate;
+    tick = 1000 ~/ samplingRate;
 
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x03, data: frequencyCode[frequency], delayMs: 100);
+    await writeReg(addr: 0x03, data: frequencyCode[samplingRate], delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x03, data: frequencyCode[frequency], delayMs: 100);
+    await writeReg(addr: 0x03, data: frequencyCode[samplingRate], delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
     return true;

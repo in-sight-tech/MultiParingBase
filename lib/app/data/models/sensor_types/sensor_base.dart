@@ -8,7 +8,7 @@ abstract class SensorBase {
 
   BytesBuilder buffer = BytesBuilder();
 
-  int frequency = 200;
+  int samplingRate = 200;
   late int tick;
 
   Future<bool> connect();

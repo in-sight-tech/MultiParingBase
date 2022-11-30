@@ -4,10 +4,15 @@ import 'package:intl/intl.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
+/// * <record,data> 명령어를 전송 했을 경우 센서에서 <record,start> 또는 <record,fail>의 응답이 올 수있음.
+/// * 센서에서 데이터를 저장할 text파일을 만들었을 경우 <record,start> 응답
+/// * 센서에서 데이터를 저장할 text파일을 만들지 못했을 경우 (sd카드가 장착되지 않은 경우) <record,fail> 응답
+
 class StrainGauge extends SensorBase {
   late StrainGaugeSignal signal;
 
-  final Function(StrainGauge, StrainGaugeSignal)? onData;
+  final Function(StrainGauge, StrainGaugeSignal)? onRealTimeSignal;
+  final Function(StrainGauge, List<StrainGaugeSignal>)? onData;
   final Function(StrainGauge)? dispose;
 
   int? predictTime;
@@ -21,10 +26,11 @@ class StrainGauge extends SensorBase {
     required BluetoothDevice device,
     this.onData,
     this.dispose,
+    this.onRealTimeSignal,
   }) {
     super.device = device;
-    frequency = 100;
-    tick = 1000 ~/ frequency;
+    samplingRate = 100;
+    tick = 1000 ~/ samplingRate;
   }
 
   @override
@@ -81,11 +87,22 @@ class StrainGauge extends SensorBase {
   }
 
   void commandMode(Uint8List packets) {
-    String.fromCharCodes(packets).endsWith('<');
-    if (String.fromCharCodes(packets) == '<sr>') {
-      writeReg(data: 'end');
-    } else if (String.fromCharCodes(packets) == '<record,true>') {
-    } else if (String.fromCharCodes(packets) == '<record,false>') {}
+    String command = String.fromCharCodes(packets);
+
+    switch (command) {
+      case '<sr>':
+        break;
+      case '<record,start>':
+        break;
+      case '<record,fail>':
+        break;
+      case '<record,done>':
+        break;
+      default:
+        break;
+    }
+
+    writeReg(data: '<end>');
     mode = Mode.normal;
   }
 
@@ -101,14 +118,14 @@ class StrainGauge extends SensorBase {
     if (predictTime == signal.time) {
       predictTime = predictTime! + tick;
 
-      onData?.call(this, signal);
+      onRealTimeSignal?.call(this, signal);
     } else {
       while (predictTime! < signal.time!) {
-        onData?.call(this, StrainGaugeSignal(time: predictTime));
+        onRealTimeSignal?.call(this, StrainGaugeSignal(time: predictTime));
         predictTime = predictTime! + tick;
       }
 
-      onData?.call(this, signal);
+      onRealTimeSignal?.call(this, signal);
       predictTime = predictTime! + tick;
     }
   }
@@ -117,6 +134,8 @@ class StrainGauge extends SensorBase {
   void disconnect() {
     connection?.dispose();
   }
+
+  // ! Command 부분
 
   @override
   Future<bool> setSamplingRate(int samplingRate) async {
@@ -127,20 +146,15 @@ class StrainGauge extends SensorBase {
 
   Future<void> writeReg({required dynamic data, int delayMs = 0}) async {
     mode = Mode.command;
-    connection?.output.add(Uint8List.fromList("<$data>".codeUnits));
+    connection?.output.add(Uint8List.fromList("$data".codeUnits));
     await Future.delayed(Duration(milliseconds: delayMs));
   }
 
   @override
-  void start() {
-    biasTime = null;
-    predictTime = null;
-
-    writeReg(data: 'record,${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}');
-  }
+  void start() => writeReg(data: '<record,${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}>');
 
   @override
-  void stop() {
-    writeReg(data: 'record,false');
-  }
+  void stop() => writeReg(data: '<record,done>');
+
+  void requestData() => writeReg(data: '<requestData>');
 }
