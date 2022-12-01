@@ -11,12 +11,18 @@ class StrainGaugeSettingDialog extends StatefulWidget {
 }
 
 class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
+  bool isWaiting = false;
   int? returnRateValue;
 
   @override
   void initState() {
     super.initState();
     returnRateValue = widget.sensor.samplingRate;
+
+    widget.sensor.onResponse = () {
+      isWaiting = false;
+      setState(() => {});
+    };
   }
 
   @override
@@ -34,35 +40,53 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
               style: const TextStyle(fontSize: 20),
             ),
             const Divider(),
-            Row(
-              children: [
-                const Text('Sampling Rate : '),
-                DropdownButton<int>(
-                  value: returnRateValue,
-                  alignment: AlignmentDirectional.centerEnd,
-                  underline: Container(),
-                  items: const [
-                    DropdownMenuItem(value: 1, alignment: AlignmentDirectional.centerEnd, child: Text('1 Hz')),
-                    DropdownMenuItem(value: 2, alignment: AlignmentDirectional.centerEnd, child: Text('2 Hz')),
-                    DropdownMenuItem(value: 5, alignment: AlignmentDirectional.centerEnd, child: Text('5 Hz')),
-                    DropdownMenuItem(value: 10, alignment: AlignmentDirectional.centerEnd, child: Text('10 Hz')),
-                    DropdownMenuItem(value: 20, alignment: AlignmentDirectional.centerEnd, child: Text('20 Hz')),
-                    DropdownMenuItem(value: 50, alignment: AlignmentDirectional.centerEnd, child: Text('50 Hz')),
-                    DropdownMenuItem(value: 100, alignment: AlignmentDirectional.centerEnd, child: Text('100 Hz')),
-                    DropdownMenuItem(value: 200, alignment: AlignmentDirectional.centerEnd, child: Text('200 Hz')),
-                  ],
-                  onChanged: (value) async {
-                    setState(() => returnRateValue = value);
-
-                    showProgressDialog();
-
-                    await widget.sensor.setSamplingRate(value!);
-
-                    if (mounted) Navigator.of(context).pop();
-                  },
+            if (isWaiting == true)
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
-              ],
-            ),
+              ),
+            if (isWaiting == false)
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      const Text('Sampling Rate : '),
+                      DropdownButton<int>(
+                        value: returnRateValue,
+                        alignment: AlignmentDirectional.centerEnd,
+                        underline: Container(),
+                        items: const [
+                          DropdownMenuItem(value: 1, alignment: AlignmentDirectional.centerEnd, child: Text('1 Hz')),
+                          DropdownMenuItem(value: 2, alignment: AlignmentDirectional.centerEnd, child: Text('2 Hz')),
+                          DropdownMenuItem(value: 5, alignment: AlignmentDirectional.centerEnd, child: Text('5 Hz')),
+                          DropdownMenuItem(value: 10, alignment: AlignmentDirectional.centerEnd, child: Text('10 Hz')),
+                          DropdownMenuItem(value: 20, alignment: AlignmentDirectional.centerEnd, child: Text('20 Hz')),
+                          DropdownMenuItem(value: 50, alignment: AlignmentDirectional.centerEnd, child: Text('50 Hz')),
+                          DropdownMenuItem(value: 100, alignment: AlignmentDirectional.centerEnd, child: Text('100 Hz')),
+                          DropdownMenuItem(value: 200, alignment: AlignmentDirectional.centerEnd, child: Text('200 Hz')),
+                        ],
+                        onChanged: (value) {
+                          isWaiting = true;
+                          returnRateValue = value;
+
+                          widget.sensor.setSamplingRate(value!);
+
+                          setState(() => {});
+                        },
+                      ),
+                    ],
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      isWaiting = true;
+                      widget.sensor.calibrate();
+                      setState(() => {});
+                    },
+                    child: const Text('Calibrate'),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

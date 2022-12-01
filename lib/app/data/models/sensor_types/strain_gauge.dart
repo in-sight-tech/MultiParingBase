@@ -15,6 +15,8 @@ class StrainGauge extends SensorBase {
   final Function(StrainGauge, List<StrainGaugeSignal>)? onData;
   final Function(StrainGauge)? dispose;
 
+  void Function()? onResponse;
+
   int? predictTime;
   int? biasTime;
 
@@ -86,26 +88,6 @@ class StrainGauge extends SensorBase {
     }
   }
 
-  void commandMode(Uint8List packets) {
-    String command = String.fromCharCodes(packets);
-
-    switch (command) {
-      case '<sr>':
-        break;
-      case '<record,start>':
-        break;
-      case '<record,fail>':
-        break;
-      case '<record,done>':
-        break;
-      default:
-        break;
-    }
-
-    writeReg(data: '<end>');
-    mode = Mode.normal;
-  }
-
   void calSignal(ByteData bytes) async {
     signal = StrainGaugeSignal();
 
@@ -136,12 +118,44 @@ class StrainGauge extends SensorBase {
   }
 
   // ! Command 부분
+  void commandMode(Uint8List packets) {
+    String command = String.fromCharCodes(packets);
 
-  @override
-  Future<bool> setSamplingRate(int samplingRate) async {
-    await writeReg(data: 'sr,$samplingRate');
+    print(command);
 
-    return true;
+    switch (command) {
+      case 'error':
+        break;
+      case '<sr>':
+        writeReg(data: '<end>');
+        mode = Mode.normal;
+        onResponse?.call();
+        break;
+      case '<record,start>':
+        writeReg(data: '<end>');
+        mode = Mode.normal;
+        onResponse?.call();
+        break;
+      case '<record,fail>':
+        writeReg(data: '<end>');
+        mode = Mode.normal;
+        onResponse?.call();
+        break;
+      case '<record,done>':
+        writeReg(data: '<end>');
+        mode = Mode.normal;
+        onResponse?.call();
+        break;
+      case '<calibrate,start>':
+        break;
+      case '<calibrate,end>':
+        writeReg(data: '<end>');
+        mode = Mode.normal;
+        onResponse?.call();
+        break;
+      default:
+        break;
+    }
   }
 
   Future<void> writeReg({required dynamic data, int delayMs = 0}) async {
@@ -151,10 +165,15 @@ class StrainGauge extends SensorBase {
   }
 
   @override
+  void setSamplingRate(int samplingRate) => writeReg(data: '<sr,$samplingRate>');
+
+  @override
   void start() => writeReg(data: '<record,${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}>');
 
   @override
   void stop() => writeReg(data: '<record,done>');
 
   void requestData() => writeReg(data: '<requestData>');
+
+  void calibrate() => writeReg(data: '<calibrate>');
 }

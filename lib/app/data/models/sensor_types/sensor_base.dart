@@ -15,7 +15,7 @@ abstract class SensorBase {
   void start();
   void stop();
   void disconnect();
-  Future<bool> setSamplingRate(int samplingRate);
+  dynamic setSamplingRate(int samplingRate);
 
   bool isValiable(Uint8List packets) {
     int checksum = 0x00;
