@@ -50,7 +50,9 @@ class StrainGauge extends SensorBase {
           case Mode.command:
             commandMode(packets);
             break;
-          default:
+          case Mode.fileTransfer:
+            fileTransferMode(packets);
+            break;
         }
       }).onDone(() {
         dispose?.call(this);
@@ -123,39 +125,35 @@ class StrainGauge extends SensorBase {
 
     print(command);
 
-    switch (command) {
-      case 'error':
-        break;
-      case '<sr>':
-        writeReg(data: '<end>');
-        mode = Mode.normal;
-        onResponse?.call();
-        break;
-      case '<record,start>':
-        writeReg(data: '<end>');
-        mode = Mode.normal;
-        onResponse?.call();
-        break;
-      case '<record,fail>':
-        writeReg(data: '<end>');
-        mode = Mode.normal;
-        onResponse?.call();
-        break;
-      case '<record,done>':
-        writeReg(data: '<end>');
-        mode = Mode.normal;
-        onResponse?.call();
-        break;
-      case '<calibrate,start>':
-        break;
-      case '<calibrate,end>':
-        writeReg(data: '<end>');
-        mode = Mode.normal;
-        onResponse?.call();
-        break;
-      default:
-        break;
+    if (command == '<error>') {
+    } else if (command == '<calibrate,start>') {
+    } else if (command == '<transferFile,size>') {
+    } else if (command == '<transferFile,start>') {
+    } else if (command == '<sr>') {
+      responseOk();
+    } else if (command == '<record,start>') {
+      responseOk();
+    } else if (command == '<record,fail>') {
+      responseOk();
+    } else if (command == '<record,done>') {
+      responseOk();
+    } else if (command == '<calibrate,end>') {
+      responseOk();
+    } else if (command == '<transferFile,done>') {
+      responseOk();
+    } else {
+      responseError();
     }
+  }
+
+  void responseOk() {
+    writeReg(data: '<end>');
+    mode = Mode.normal;
+    onResponse?.call();
+  }
+
+  void responseError() {
+    writeReg(data: '<error>');
   }
 
   Future<void> writeReg({required dynamic data, int delayMs = 0}) async {
@@ -173,7 +171,10 @@ class StrainGauge extends SensorBase {
   @override
   void stop() => writeReg(data: '<record,done>');
 
-  void requestData() => writeReg(data: '<requestData>');
+  void transferFile() => writeReg(data: '<transferFile>');
 
   void calibrate() => writeReg(data: '<calibrate>');
+
+  // ! File Transfer mode
+  void fileTransferMode(Uint8List packets) {}
 }

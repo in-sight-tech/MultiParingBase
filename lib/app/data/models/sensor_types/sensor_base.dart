@@ -28,4 +28,4 @@ abstract class SensorBase {
   }
 }
 
-enum Mode { command, normal }
+enum Mode { command, normal, fileTransfer }

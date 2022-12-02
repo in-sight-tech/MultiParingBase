@@ -85,6 +85,14 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
                     },
                     child: const Text('Calibrate'),
                   ),
+                  ElevatedButton(
+                    onPressed: () {
+                      isWaiting = true;
+                      widget.sensor.transferFile();
+                      setState(() => {});
+                    },
+                    child: const Text('request'),
+                  ),
                 ],
               ),
           ],
