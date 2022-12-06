@@ -12,9 +12,9 @@ class Utils {
 
     int? signalMinLength;
     for (SensorInformation information in informations) {
-      signalMinLength ??= isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync().length;
-      if (signalMinLength > isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync().length) {
-        signalMinLength = isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync().length;
+      signalMinLength ??= isar.sensorSignals.filter().sensorIdEqualTo(information.id).countSync();
+      if (signalMinLength > isar.sensorSignals.filter().sensorIdEqualTo(information.id).countSync()) {
+        signalMinLength = isar.sensorSignals.filter().sensorIdEqualTo(information.id).countSync();
       }
     }
 
@@ -41,6 +41,7 @@ class Utils {
       }
 
       List<SensorSignal> signal = isar.sensorSignals.filter().sensorIdEqualTo(information.id).findAllSync();
+
       for (int i = 0; i < signalMinLength; i++) {
         if (rows.length - 8 <= i) {
           rows.add(<String>['${i + 1}', ((signal[i].signals[0] ?? 0) / 1000).toStringAsFixed(3)]);

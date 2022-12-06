@@ -1,12 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
-
-/// * <record,data> 명령어를 전송 했을 경우 센서에서 <record,start> 또는 <record,fail>의 응답이 올 수있음.
-/// * 센서에서 데이터를 저장할 text파일을 만들었을 경우 <record,start> 응답
-/// * 센서에서 데이터를 저장할 text파일을 만들지 못했을 경우 (sd카드가 장착되지 않은 경우) <record,fail> 응답
 
 class StrainGauge extends SensorBase {
   late StrainGaugeSignal signal;
@@ -16,13 +13,23 @@ class StrainGauge extends SensorBase {
   final Function(StrainGauge)? dispose;
 
   void Function()? onResponse;
+  void Function()? onError;
 
   int? predictTime;
   int? biasTime;
 
   String unit = 'mm';
 
-  Mode mode = Mode.normal;
+  Mode _mode = Mode.normal;
+
+  Mode get mode => _mode;
+
+  set mode(Mode mode) {
+    _mode = mode;
+    buffer.clear();
+  }
+
+  Logger logger = Logger();
 
   StrainGauge({
     required BluetoothDevice device,
@@ -43,6 +50,8 @@ class StrainGauge extends SensorBase {
       if (connection?.isConnected == false) throw 'Connect error';
 
       connection?.input?.listen((Uint8List packets) {
+        if (packets.isEmpty) return;
+
         switch (mode) {
           case Mode.normal:
             normalMode(packets);
@@ -60,7 +69,7 @@ class StrainGauge extends SensorBase {
 
       return true;
     } catch (e) {
-      if (kDebugMode) print(e);
+      logger.e(e);
       return false;
     }
   }
@@ -121,39 +130,38 @@ class StrainGauge extends SensorBase {
 
   // ! Command 부분
   void commandMode(Uint8List packets) {
-    String command = String.fromCharCodes(packets);
+    for (int byte in packets) {
+      if (byte == 60) {
+        buffer.clear();
+      }
 
-    print(command);
+      buffer.addByte(byte);
 
-    if (command == '<error>') {
-    } else if (command == '<calibrate,start>') {
-    } else if (command == '<transferFile,size>') {
-    } else if (command == '<transferFile,start>') {
-    } else if (command == '<sr>') {
-      responseOk();
-    } else if (command == '<record,start>') {
-      responseOk();
-    } else if (command == '<record,fail>') {
-      responseOk();
-    } else if (command == '<record,done>') {
-      responseOk();
-    } else if (command == '<calibrate,end>') {
-      responseOk();
-    } else if (command == '<transferFile,done>') {
-      responseOk();
-    } else {
-      responseError();
+      if (byte == 62) {
+        String command = String.fromCharCodes(buffer.toBytes());
+
+        logger.i(command);
+
+        if (command == '<er>') {
+          responseError();
+        } else if (command == '<ok>') {
+          responseOk();
+        }
+
+        buffer.clear();
+      }
     }
   }
 
   void responseOk() {
-    writeReg(data: '<end>');
     mode = Mode.normal;
     onResponse?.call();
   }
 
   void responseError() {
     writeReg(data: '<error>');
+    logger.i('error');
+    onError?.call();
   }
 
   Future<void> writeReg({required dynamic data, int delayMs = 0}) async {
@@ -163,18 +171,39 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  void setSamplingRate(int samplingRate) => writeReg(data: '<sr,$samplingRate>');
+  void setSamplingRate(int samplingRate) => writeReg(data: '<sor,$samplingRate>');
 
   @override
-  void start() => writeReg(data: '<record,${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}>');
+  void start() => writeReg(data: '<si,${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}>');
 
   @override
-  void stop() => writeReg(data: '<record,done>');
+  void stop() => writeReg(data: '<eoi>');
 
-  void transferFile() => writeReg(data: '<transferFile>');
+  void transferFile() async {
+    writeReg(data: '<ftr>');
+    mode = Mode.fileTransfer;
+  }
 
-  void calibrate() => writeReg(data: '<calibrate>');
+  void calibrate() => writeReg(data: '<zc>');
 
   // ! File Transfer mode
-  void fileTransferMode(Uint8List packets) {}
+  void fileTransferMode(Uint8List packets) {
+    for (int byte in packets) {
+      if (byte != 0x55) {
+        buffer.addByte(byte);
+        continue;
+      }
+
+      // if (!isValiable(buffer.toBytes())) {
+      //   buffer.clear();
+      //   continue;
+      // }
+
+      logger.i('${buffer.toBytes()}');
+
+      buffer.clear();
+
+      buffer.addByte(byte);
+    }
+  }
 }

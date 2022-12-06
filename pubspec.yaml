@@ -15,8 +15,9 @@ dependencies:
   csv: 5.0.1
   intl: 0.17.0
   file_saver: 0.1.1
-  isar: 3.0.4
-  isar_flutter_libs: 3.0.4
+  isar: 
+  isar_flutter_libs: 
+  logger: ^1.1.0
   flutter: 
     sdk: flutter
 
@@ -25,7 +26,7 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   flutter_test: 
     sdk: flutter
-  isar_generator: ^3.0.4
+  isar_generator:
 
 flutter: 
   uses-material-design: true

@@ -18,6 +18,7 @@ abstract class SensorBase {
   dynamic setSamplingRate(int samplingRate);
 
   bool isValiable(Uint8List packets) {
+    if (packets.isEmpty) return false;
     int checksum = 0x00;
 
     for (int i = 0; i < packets.length - 1; i++) {

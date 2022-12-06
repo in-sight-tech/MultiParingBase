@@ -21,7 +21,12 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
 
     widget.sensor.onResponse = () {
       isWaiting = false;
-      setState(() => {});
+      if (mounted) setState(() => {});
+    };
+
+    widget.sensor.onError = () {
+      isWaiting = false;
+      if (mounted) setState(() => {});
     };
   }
 
