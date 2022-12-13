@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:multiparingbase/app/data/enums.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
-  final bool? state;
-  final void Function(bool?) onPressed;
+  final RecordStates state;
+  final void Function(RecordStates) onPressed;
+  final List<Icon> icons = const [
+    Icon(Icons.play_arrow_rounded),
+    Icon(Icons.pause_rounded),
+  ];
 
   const CustomFloatingActionButton({
     super.key,
@@ -10,34 +15,16 @@ class CustomFloatingActionButton extends StatelessWidget {
     required this.onPressed,
   });
 
+  RecordStates nextEnum(RecordStates value) {
+    final nextIndex = (value.index + 1) % RecordStates.values.length;
+    return RecordStates.values[nextIndex];
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        if (state == null)
-          FloatingActionButton(
-            onPressed: () => onPressed(null),
-            child: const Icon(Icons.play_arrow_rounded),
-          ),
-        if (state == true)
-          FloatingActionButton(
-            onPressed: () => onPressed(true),
-            child: const Icon(Icons.pause_rounded),
-          ),
-        if (state == false)
-          FloatingActionButton(
-            onPressed: () => onPressed(null),
-            child: const Icon(Icons.play_arrow_rounded),
-          ),
-        if (state == false) const SizedBox(width: 10),
-        if (state == false)
-          FloatingActionButton(
-            onPressed: () => onPressed(false),
-            child: const Icon(Icons.stop_rounded),
-          ),
-      ],
+    return FloatingActionButton(
+      onPressed: () => onPressed(nextEnum(state)),
+      child: icons[state.index],
     );
   }
 }

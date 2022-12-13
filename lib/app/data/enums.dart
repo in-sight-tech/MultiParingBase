@@ -1,0 +1,1 @@
+enum RecordStates { none, recording }

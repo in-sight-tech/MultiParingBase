@@ -192,7 +192,7 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
                       )),
                   if (isDiscovering)
                     const Padding(
-                      padding: EdgeInsets.only(top: 8.0),
+                      padding: EdgeInsets.only(top: 16.0),
                       child: Center(child: CircularProgressIndicator()),
                     ),
                   if (!isDiscovering) TextButton(onPressed: bluetoothDiscovery, child: const Text('다시 검색'))

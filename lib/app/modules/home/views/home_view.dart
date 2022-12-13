@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/widgets/app_drawer.dart';
@@ -24,7 +25,7 @@ class HomeView extends GetView<HomeController> {
           GetBuilder<HomeController>(
             id: 'bluetoothIcon',
             builder: (_) => IconButton(
-              onPressed: controller.recordState == null
+              onPressed: controller.recordState == RecordStates.none
                   ? () => Get.dialog(
                         Dialog(
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

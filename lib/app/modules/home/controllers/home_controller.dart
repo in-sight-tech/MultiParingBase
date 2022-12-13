@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 import 'package:multiparingbase/app/data/collections/sensor_information.dart';
 import 'package:multiparingbase/app/data/collections/sensor_signal.dart';
+import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/data/utils.dart';
@@ -20,7 +20,7 @@ class HomeController extends GetxController {
   final devices = <SensorBase>[];
   final datas = <RxList<SignalBase>>[];
 
-  bool? recordState;
+  RecordStates recordState = RecordStates.none;
   late Isar isar;
 
   late Timer _timer;
@@ -39,6 +39,8 @@ class HomeController extends GetxController {
   @override
   void onClose() {
     super.onClose();
+
+    if (isar.isOpen) isar.close();
 
     _timer.cancel();
     for (SensorBase device in devices) {
@@ -66,7 +68,7 @@ class HomeController extends GetxController {
           datas[index].removeAt(0);
           datas[index].add(signal);
 
-          if (recordState ?? false) {
+          if (recordState == RecordStates.recording) {
             isar.writeTxnSync(() {
               isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
             });
@@ -107,7 +109,7 @@ class HomeController extends GetxController {
           datas[index].add(signal);
         },
         onData: (StrainGauge sensor, List<StrainGaugeSignal> signals) async {
-          if (recordState ?? false) {
+          if (recordState == RecordStates.recording) {
             isar.writeTxnSync(() {
               isar.sensorSignals.putAllSync(signals.map((e) => SensorSignal(sensorId: sensor.device.address, signals: e.toList())).toList());
             });
@@ -169,11 +171,12 @@ class HomeController extends GetxController {
     }
   }
 
-  void switchRecordState(bool? value) async {
-    if (value == null) {
-      recordState = true;
-      update(['fab', 'bluetoothIcon']);
+  void switchRecordState(RecordStates value) async {
+    recordState = value;
 
+    update(['fab', 'bluetoothIcon']);
+
+    if (recordState == RecordStates.recording) {
       isar.writeTxnSync(() {
         isar.sensorSignals.clearSync();
         isar.sensorInformations.clearSync();
@@ -192,21 +195,41 @@ class HomeController extends GetxController {
             isar.sensorInformations.putSync(SensorInformation(
               id: device.device.address,
               type: SensorType.strainGauge,
-              units: ['s', 'v'],
-              names: ['time', 'value'],
+              units: ['s', device.unit],
+              names: ['time', 'voltage'],
             ));
           }
         }
       });
 
       recordStart();
-    } else if (value == true) {
-      recordState = false;
-      update(['fab', 'bluetoothIcon']);
-    } else if (value == false) {
-      recordState = null;
-      update(['fab', 'bluetoothIcon']);
+    } else if (recordState == RecordStates.none) {
       recordStop();
+
+      bool? result = await Get.dialog(
+        Dialog(
+          child: Container(
+            width: 200,
+            height: 100,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                const Text('저장하시겠습니까?', style: TextStyle(fontSize: 25)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(onPressed: () => Get.back(result: false), child: const Text('취소')),
+                    ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('저장')),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+
+      if (result == null || result == false) return;
 
       Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
 
