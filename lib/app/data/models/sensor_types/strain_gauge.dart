@@ -75,6 +75,7 @@ class StrainGauge extends SensorBase {
   }
 
   void normalMode(Uint8List packets) {
+    print(packets.map((e) => '0x${e.toRadixString(16)}'));
     for (int byte in packets) {
       if (byte != 0x55) {
         buffer.addByte(byte);
