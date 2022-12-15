@@ -82,6 +82,7 @@ class BWT901CL extends SensorBase {
     } else if (opCode! > bytes.getInt8(1)) {
       signal.time ??= predictTime;
       if (signal.time == predictTime) {
+        print(predictTime);
         onData?.call(this, signal);
         predictTime = predictTime! + tick;
       } else {

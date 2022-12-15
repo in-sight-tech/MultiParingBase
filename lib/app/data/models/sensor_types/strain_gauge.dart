@@ -82,7 +82,6 @@ class StrainGauge extends SensorBase {
     for (int byte in packets) {
       while (buffer.length > 9) {
         if (buffer[0] == 0x55 && buffer[1] == 0x55) {
-          logger.i(buffer.map((e) => '0x${e.toRadixString(16)}'));
           calSignal(ByteData.view(Uint8List.fromList(buffer).buffer));
           buffer.clear();
         } else {
