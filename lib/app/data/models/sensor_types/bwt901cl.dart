@@ -47,26 +47,15 @@ class BWT901CL extends SensorBase {
 
       connection?.input?.listen((Uint8List packets) {
         for (int byte in packets) {
-          if (byte != 0x55) {
-            buffer.addByte(byte);
-            continue;
+          while (buffer.length > 10) {
+            if (buffer[0] == 0x55) {
+              calSignal(ByteData.view(Uint8List.fromList(buffer).buffer));
+              buffer.clear();
+            } else {
+              buffer.removeAt(0);
+            }
           }
-
-          if (buffer.length != 11) {
-            buffer.clear();
-            buffer.addByte(byte);
-            continue;
-          }
-
-          if (!isValiable(buffer.toBytes())) {
-            buffer.clear();
-            continue;
-          }
-
-          calSignal(buffer.takeBytes().buffer.asByteData());
-          buffer.clear();
-
-          buffer.addByte(byte);
+          buffer.add(byte);
         }
       }).onDone(() {
         dispose?.call(this);

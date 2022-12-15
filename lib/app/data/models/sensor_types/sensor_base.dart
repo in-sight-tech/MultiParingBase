@@ -6,7 +6,7 @@ abstract class SensorBase {
   late BluetoothDevice device;
   BluetoothConnection? connection;
 
-  BytesBuilder buffer = BytesBuilder();
+  List<int> buffer = [];
 
   int samplingRate = 200;
   late int tick;

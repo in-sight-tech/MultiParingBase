@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +19,8 @@ class StrainGauge extends SensorBase {
 
   int? predictTime;
   int? biasTime;
+
+  int? preByte;
 
   String unit = 'mm';
 
@@ -75,39 +79,28 @@ class StrainGauge extends SensorBase {
   }
 
   void normalMode(Uint8List packets) {
-    print(packets.map((e) => '0x${e.toRadixString(16)}'));
     for (int byte in packets) {
-      if (byte != 0x55) {
-        buffer.addByte(byte);
-        continue;
+      while (buffer.length > 9) {
+        if (buffer[0] == 0x55 && buffer[1] == 0x55) {
+          logger.i(buffer.map((e) => '0x${e.toRadixString(16)}'));
+          calSignal(ByteData.view(Uint8List.fromList(buffer).buffer));
+          buffer.clear();
+        } else {
+          buffer.removeAt(0);
+        }
       }
-
-      if (buffer.length != 8) {
-        buffer.clear();
-        buffer.addByte(byte);
-        continue;
-      }
-
-      if (!isValiable(buffer.toBytes())) {
-        buffer.clear();
-        continue;
-      }
-
-      calSignal(buffer.takeBytes().buffer.asByteData());
-      buffer.clear();
-
-      buffer.addByte(byte);
+      buffer.add(byte);
     }
   }
 
   void calSignal(ByteData bytes) async {
     signal = StrainGaugeSignal();
 
-    biasTime ??= bytes.getInt32(1, Endian.little);
-    signal.time = bytes.getInt32(1, Endian.little) - biasTime!;
+    biasTime ??= bytes.getInt32(4, Endian.little);
+    signal.time = bytes.getInt32(4, Endian.little) - biasTime!;
     predictTime ??= signal.time! + tick;
 
-    signal.value = bytes.getInt16(5, Endian.little).toDouble() / 4096.0 * 3.3;
+    signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3;
 
     if (predictTime == signal.time) {
       predictTime = predictTime! + tick;
@@ -131,27 +124,27 @@ class StrainGauge extends SensorBase {
 
   // ! Command 부분
   void commandMode(Uint8List packets) {
-    for (int byte in packets) {
-      if (byte == 60) {
-        buffer.clear();
-      }
+    // for (int byte in packets) {
+    //   if (byte == 60) {
+    //     buffer.clear();
+    //   }
 
-      buffer.addByte(byte);
+    //   buffer.addByte(byte);
 
-      if (byte == 62) {
-        String command = String.fromCharCodes(buffer.toBytes());
+    //   if (byte == 62) {
+    //     String command = String.fromCharCodes(buffer.toBytes());
 
-        logger.i(command);
+    //     logger.i(command);
 
-        if (command == '<er>') {
-          responseError();
-        } else if (command == '<ok>') {
-          responseOk();
-        }
+    //     if (command == '<er>') {
+    //       responseError();
+    //     } else if (command == '<ok>') {
+    //       responseOk();
+    //     }
 
-        buffer.clear();
-      }
-    }
+    //     buffer.clear();
+    //   }
+    // }
   }
 
   void responseOk() {
@@ -189,22 +182,22 @@ class StrainGauge extends SensorBase {
 
   // ! File Transfer mode
   void fileTransferMode(Uint8List packets) {
-    for (int byte in packets) {
-      if (byte != 0x55) {
-        buffer.addByte(byte);
-        continue;
-      }
+    // for (int byte in packets) {
+    //   if (byte != 0x55) {
+    //     buffer.addByte(byte);
+    //     continue;
+    //   }
 
-      // if (!isValiable(buffer.toBytes())) {
-      //   buffer.clear();
-      //   continue;
-      // }
+    //   // if (!isValiable(buffer.toBytes())) {
+    //   //   buffer.clear();
+    //   //   continue;
+    //   // }
 
-      logger.i('${buffer.toBytes()}');
+    //   logger.i('${buffer.toBytes()}');
 
-      buffer.clear();
+    //   buffer.clear();
 
-      buffer.addByte(byte);
-    }
+    //   buffer.addByte(byte);
+    // }
   }
 }
