@@ -81,11 +81,11 @@ class StrainGauge extends SensorBase {
   void normalMode(Uint8List packets) {
     for (int byte in packets) {
       while (buffer.length > 9) {
-        if (buffer[0] == 0x55 && buffer[1] == 0x55) {
-          calSignal(ByteData.view(Uint8List.fromList(buffer).buffer));
+        if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
+          calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
           buffer.clear();
         } else {
-          buffer.removeAt(0);
+          buffer.removeFirst();
         }
       }
       buffer.add(byte);
@@ -97,23 +97,26 @@ class StrainGauge extends SensorBase {
 
     biasTime ??= bytes.getInt32(4, Endian.little);
     signal.time = bytes.getInt32(4, Endian.little) - biasTime!;
-    predictTime ??= signal.time! + tick;
+    predictTime ??= signal.time!;
 
     signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3;
 
-    if (predictTime == signal.time) {
-      predictTime = predictTime! + tick;
+    onRealTimeSignal?.call(this, signal);
+    // if (predictTime == signal.time) {
+    //   predictTime = predictTime! + tick;
 
-      onRealTimeSignal?.call(this, signal);
-    } else {
-      while (predictTime! < signal.time!) {
-        onRealTimeSignal?.call(this, StrainGaugeSignal(time: predictTime));
-        predictTime = predictTime! + tick;
-      }
+    //   onRealTimeSignal?.call(this, signal);
+    // } else {
+    //   while (predictTime! < signal.time!) {
+    //     onRealTimeSignal?.call(this, StrainGaugeSignal(time: predictTime));
+    //     predictTime = predictTime! + tick;
+    //   }
 
-      onRealTimeSignal?.call(this, signal);
-      predictTime = predictTime! + tick;
-    }
+    //   onRealTimeSignal?.call(this, signal);
+    //   if (predictTime! < signal.time!) {
+    //     predictTime = predictTime! + tick;
+    //   }
+    // }
   }
 
   @override
@@ -158,7 +161,7 @@ class StrainGauge extends SensorBase {
   }
 
   Future<void> writeReg({required dynamic data, int delayMs = 0}) async {
-    mode = Mode.command;
+    // mode = Mode.command;
     connection?.output.add(Uint8List.fromList("$data".codeUnits));
     await Future.delayed(Duration(milliseconds: delayMs));
   }

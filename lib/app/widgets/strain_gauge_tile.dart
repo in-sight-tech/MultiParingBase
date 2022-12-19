@@ -35,7 +35,7 @@ class StrainGaugeTile extends StatelessWidget {
                       sensor: sensor,
                     ),
                   ),
-                icon: const Icon(Icons.settings),
+                  icon: const Icon(Icons.settings),
                 ),
                 CloseButton(onPressed: sensor.disconnect),
               ],
@@ -74,6 +74,7 @@ class StrainGaugeTile extends StatelessWidget {
                   rightTitles: AxisTitles(),
                   bottomTitles: AxisTitles(),
                 ),
+                lineTouchData: LineTouchData(enabled: false),
               ),
               swapAnimationDuration: Duration.zero,
             ),
@@ -83,7 +84,6 @@ class StrainGaugeTile extends StatelessWidget {
     );
   }
 }
-
 
 class StrainGaugeSettingDialog extends StatefulWidget {
   final StrainGauge sensor;

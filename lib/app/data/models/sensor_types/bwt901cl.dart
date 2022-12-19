@@ -48,11 +48,11 @@ class BWT901CL extends SensorBase {
       connection?.input?.listen((Uint8List packets) {
         for (int byte in packets) {
           while (buffer.length > 10) {
-            if (buffer[0] == 0x55) {
-              calSignal(ByteData.view(Uint8List.fromList(buffer).buffer));
+            if (buffer.elementAt(0) == 0x55) {
+              calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
               buffer.clear();
             } else {
-              buffer.removeAt(0);
+              buffer.removeFirst();
             }
           }
           buffer.add(byte);
@@ -82,7 +82,6 @@ class BWT901CL extends SensorBase {
     } else if (opCode! > bytes.getInt8(1)) {
       signal.time ??= predictTime;
       if (signal.time == predictTime) {
-        print(predictTime);
         onData?.call(this, signal);
         predictTime = predictTime! + tick;
       } else {
@@ -103,7 +102,7 @@ class BWT901CL extends SensorBase {
         opCode = 0x50;
         biasTime ??= bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little);
         signal.time = bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little) - biasTime!;
-        predictTime ??= signal.time! + tick;
+        predictTime ??= signal.time!;
         break;
       case 0x51:
         if (opCode == null) return;

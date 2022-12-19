@@ -269,6 +269,7 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
                   rightTitles: AxisTitles(),
                   bottomTitles: AxisTitles(),
                 ),
+                lineTouchData: LineTouchData(enabled: false),
               ),
               swapAnimationDuration: Duration.zero,
             ),

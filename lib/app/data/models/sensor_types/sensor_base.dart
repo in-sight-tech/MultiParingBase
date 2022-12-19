@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:typed_data';
 
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
@@ -6,7 +7,7 @@ abstract class SensorBase {
   late BluetoothDevice device;
   BluetoothConnection? connection;
 
-  List<int> buffer = [];
+  Queue<int> buffer = Queue<int>();
 
   int samplingRate = 200;
   late int tick;

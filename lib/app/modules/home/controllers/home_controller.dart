@@ -31,7 +31,7 @@ class HomeController extends GetxController {
 
     isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
 
-    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (devices.isNotEmpty) update(['tile']);
     });
   }
@@ -107,14 +107,22 @@ class HomeController extends GetxController {
 
           datas[index].removeAt(0);
           datas[index].add(signal);
-        },
-        onData: (StrainGauge sensor, List<StrainGaugeSignal> signals) async {
+
+          // print(signal);
+
           if (recordState == RecordStates.recording) {
             isar.writeTxnSync(() {
-              isar.sensorSignals.putAllSync(signals.map((e) => SensorSignal(sensorId: sensor.device.address, signals: e.toList())).toList());
+              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
             });
           }
         },
+        // onData: (StrainGauge sensor, List<StrainGaugeSignal> signals) async {
+        //   if (recordState == RecordStates.recording) {
+        //     isar.writeTxnSync(() {
+        //       isar.sensorSignals.putAllSync(signals.map((e) => SensorSignal(sensorId: sensor.device.address, signals: e.toList())).toList());
+        //     });
+        //   }
+        // },
         dispose: (StrainGauge sensor) {
           removeDevice(sensor);
         },
@@ -206,39 +214,43 @@ class HomeController extends GetxController {
     } else if (recordState == RecordStates.none) {
       recordStop();
 
-      bool? result = await Get.dialog(
-        Dialog(
-          child: Container(
-            width: 200,
-            height: 100,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                const Text('저장하시겠습니까?', style: TextStyle(fontSize: 25)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(onPressed: () => Get.back(result: false), child: const Text('취소')),
-                    ElevatedButton(onPressed: () => Get.back(result: true), child: const Text('저장')),
-                  ],
-                )
-              ],
-            ),
+      await Get.bottomSheet(
+        Container(
+          width: 300,
+          height: 100,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              const Text('저장하시겠습니까?', style: TextStyle(fontSize: 25)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(onPressed: () => Get.back(result: false), child: const Text('취소')),
+                  ElevatedButton(
+                    onPressed: () {},
+                    child: const Text('App에 저장'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      Get.back(result: true);
+                      Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
+
+                      if (bytes == null) return;
+
+                      DateTime now = DateTime.now();
+                      String formattedData = DateFormat('yyyyMMddHHmmss').format(now);
+                      MimeType type = MimeType.CSV;
+                      await FileSaver.instance.saveAs('$formattedData.csv', bytes, 'csv', type);
+                    },
+                    child: const Text('Csv로 저장'),
+                  ),
+                ],
+              )
+            ],
           ),
         ),
       );
-
-      if (result == null || result == false) return;
-
-      Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
-
-      if (bytes == null) return;
-
-      DateTime now = DateTime.now();
-      String formattedData = DateFormat('yyyyMMddHHmmss').format(now);
-      MimeType type = MimeType.CSV;
-      await FileSaver.instance.saveAs('$formattedData.csv', bytes, 'csv', type);
     }
   }
 }
