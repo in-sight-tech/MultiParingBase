@@ -116,13 +116,6 @@ class HomeController extends GetxController {
             });
           }
         },
-        // onData: (StrainGauge sensor, List<StrainGaugeSignal> signals) async {
-        //   if (recordState == RecordStates.recording) {
-        //     isar.writeTxnSync(() {
-        //       isar.sensorSignals.putAllSync(signals.map((e) => SensorSignal(sensorId: sensor.device.address, signals: e.toList())).toList());
-        //     });
-        //   }
-        // },
         dispose: (StrainGauge sensor) {
           removeDevice(sensor);
         },

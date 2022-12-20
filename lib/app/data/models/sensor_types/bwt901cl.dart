@@ -46,6 +46,7 @@ class BWT901CL extends SensorBase {
       await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
+        // print(packets);
         for (int byte in packets) {
           while (buffer.length > 10) {
             if (buffer.elementAt(0) == 0x55) {
