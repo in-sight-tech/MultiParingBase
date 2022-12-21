@@ -2,25 +2,22 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
-import 'package:multiparingbase/app/data/models/signals/bwt901cl_signal.dart';
+import 'package:multiparingbase/app/data/models/signals/Imu_signal.dart';
 
-class BWT901CL extends SensorBase {
-  late BWT901CLSignal signal;
+class Imu extends SensorBase {
+  late ImuSignal signal;
 
-  Function(BWT901CL, BWT901CLSignal)? onData;
-  Function(BWT901CL)? dispose;
-
-  Timer? _timer;
+  Function(Imu, ImuSignal)? onData;
+  Function(Imu)? dispose;
 
   int? opCode;
-  int? predictTime;
   int? biasTime;
 
   String accelerationUnit = 'm/s²';
 
-  Bwt901clReturnContents returnContents = Bwt901clReturnContents();
+  ImuReturnContents returnContents = ImuReturnContents();
 
-  BWT901CL({
+  Imu({
     required BluetoothDevice device,
     this.onData,
     this.dispose,
@@ -32,7 +29,6 @@ class BWT901CL extends SensorBase {
   @override
   void disconnect() {
     connection?.dispose();
-    _timer?.cancel();
   }
 
   @override
@@ -46,7 +42,6 @@ class BWT901CL extends SensorBase {
       await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
-        // print(packets);
         for (int byte in packets) {
           while (buffer.length > 10) {
             if (buffer.elementAt(0) == 0x55) {
@@ -62,14 +57,6 @@ class BWT901CL extends SensorBase {
         dispose?.call(this);
       });
 
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-        try {
-          connection?.output.add(Uint8List.fromList([0x01]));
-        } catch (e) {
-          if (kDebugMode) print(e);
-        }
-      });
-
       return true;
     } catch (e) {
       if (kDebugMode) print(e);
@@ -79,23 +66,11 @@ class BWT901CL extends SensorBase {
 
   void calSignal(ByteData bytes) async {
     if (opCode == null) {
-      signal = BWT901CLSignal();
+      signal = ImuSignal();
     } else if (opCode! > bytes.getInt8(1)) {
-      // signal.time ??= predictTime;
-      // if (signal.time == predictTime) {
       onData?.call(this, signal);
-      //   predictTime = predictTime! + tick;
-      // } else {
-      //   while (predictTime! < signal.time!) {
-      //     onData?.call(this, BWT901CLSignal(time: predictTime));
-      //     predictTime = predictTime! + tick;
-      //   }
 
-      //   onData?.call(this, signal);
-      //   predictTime = predictTime! + tick;
-      // }
-
-      signal = BWT901CLSignal();
+      signal = ImuSignal();
     }
 
     switch (bytes.getInt8(1)) {
@@ -103,7 +78,6 @@ class BWT901CL extends SensorBase {
         opCode = 0x50;
         biasTime ??= bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little);
         signal.time = bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little) - biasTime!;
-        predictTime ??= signal.time!;
         break;
       case 0x51:
         if (opCode == null) return;
@@ -173,7 +147,6 @@ class BWT901CL extends SensorBase {
     };
 
     opCode = null;
-    predictTime = null;
 
     samplingRate = samplingRate;
     tick = 1000 ~/ samplingRate;
@@ -189,7 +162,7 @@ class BWT901CL extends SensorBase {
     return true;
   }
 
-  Future<bool> setReturnContent(Bwt901clReturnContents rc) async {
+  Future<bool> setReturnContent(ImuReturnContents rc) async {
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
@@ -224,18 +197,16 @@ class BWT901CL extends SensorBase {
   void start() {
     biasTime = null;
     opCode = null;
-    predictTime = null;
   }
 
   @override
   void stop() {
     biasTime = null;
     opCode = null;
-    predictTime = null;
   }
 }
 
-class Bwt901clReturnContents {
+class ImuReturnContents {
   bool acceleration = true;
   bool angularVelocity = false;
   bool angle = false;

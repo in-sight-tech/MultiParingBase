@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:multiparingbase/app/data/models/models.dart';
+import 'package:multiparingbase/app/data/enums.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BluetoothDiscovery extends StatefulWidget {

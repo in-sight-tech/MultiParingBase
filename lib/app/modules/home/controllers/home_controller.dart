@@ -6,8 +6,7 @@ import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
-import 'package:multiparingbase/app/data/collections/sensor_information.dart';
-import 'package:multiparingbase/app/data/collections/sensor_signal.dart';
+import 'package:multiparingbase/app/data/collections/collections.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
@@ -108,8 +107,6 @@ class HomeController extends GetxController {
           datas[index].removeAt(0);
           datas[index].add(signal);
 
-          // print(signal);
-
           if (recordState == RecordStates.recording) {
             isar.writeTxnSync(() {
               isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
@@ -142,6 +139,45 @@ class HomeController extends GetxController {
         Future.delayed(const Duration(seconds: 3), Get.back);
       }
     } else if (type == SensorType.imu) {
+      sensor = Imu(
+        device: device,
+        // onData: (Imu sensor, ImuSignal signal) async {
+        //   // int index = devices.indexOf(sensor);
+
+        //   // datas[index].removeAt(0);
+        //   // datas[index].add(signal);
+
+        //   // if (recordState == RecordStates.recording) {
+        //   //   isar.writeTxnSync(() {
+        //   //     isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
+        //   //   });
+        //   // }
+        // },
+        dispose: (Imu sensor) {
+          removeDevice(sensor);
+        },
+      );
+
+      if (await sensor.connect()) {
+        Get.back();
+        devices.add(sensor);
+        datas.add(RxList.generate(bufferLength, (index) => ImuSignal()));
+
+        update(['deviceList']);
+      } else {
+        Get.back();
+
+        Get.defaultDialog(
+          title: '연결 실패',
+          content: const Icon(
+            Icons.error_outline,
+            size: 40,
+            color: Colors.red,
+          ),
+        );
+
+        Future.delayed(const Duration(seconds: 3), Get.back);
+      }
     } else if (type == SensorType.analog) {}
   }
 
@@ -227,7 +263,7 @@ class HomeController extends GetxController {
                   ElevatedButton(
                     onPressed: () async {
                       Get.back(result: true);
-                      Uint8List? bytes = await compute(Utils.convertCSV, devices.length);
+                      Uint8List? bytes = await compute(Utils.toCSV, devices.length);
 
                       if (bytes == null) return;
 

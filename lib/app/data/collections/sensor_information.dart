@@ -1,5 +1,5 @@
 import 'package:isar/isar.dart';
-import 'package:multiparingbase/app/data/models/models.dart';
+import 'package:multiparingbase/app/data/enums.dart';
 
 part 'sensor_information.g.dart';
 

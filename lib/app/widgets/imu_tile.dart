@@ -4,21 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
-class BWT901CLTile extends StatefulWidget {
-  final BWT901CL sensor;
-  final List<BWT901CLSignal> signal;
+class ImuTile extends StatefulWidget {
+  final Imu sensor;
+  final List<ImuSignal> signal;
 
-  const BWT901CLTile({
+  const ImuTile({
     super.key,
     required this.signal,
     required this.sensor,
   });
 
   @override
-  State<BWT901CLTile> createState() => _BWT901CLTileState();
+  State<ImuTile> createState() => _ImuTileState();
 }
 
-class _BWT901CLTileState extends State<BWT901CLTile> {
+class _ImuTileState extends State<ImuTile> {
   int? value = 0;
   late String unit;
 
@@ -129,7 +129,7 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
   }
 
   @override
-  void didUpdateWidget(covariant BWT901CLTile oldWidget) {
+  void didUpdateWidget(covariant ImuTile oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (value == 0) {
@@ -159,7 +159,7 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
                 IconButton(
                   onPressed: () => showDialog(
                     context: context,
-                    builder: (context) => BWT901ClSettingDialog(
+                    builder: (context) => ImuSettingDialog(
                       sensor: widget.sensor,
                     ),
                   ),
@@ -280,24 +280,24 @@ class _BWT901CLTileState extends State<BWT901CLTile> {
   }
 }
 
-class BWT901ClSettingDialog extends StatefulWidget {
-  final BWT901CL sensor;
+class ImuSettingDialog extends StatefulWidget {
+  final Imu sensor;
 
-  const BWT901ClSettingDialog({
+  const ImuSettingDialog({
     super.key,
     required this.sensor,
   });
 
   @override
-  State<BWT901ClSettingDialog> createState() => _BWT901ClSettingDialogState();
+  State<ImuSettingDialog> createState() => _ImuSettingDialogState();
 }
 
-class _BWT901ClSettingDialogState extends State<BWT901ClSettingDialog> {
+class _ImuSettingDialogState extends State<ImuSettingDialog> {
   String? unitValue;
 
   int? returnRateValue;
 
-  late Bwt901clReturnContents returnContentsValue;
+  late ImuReturnContents returnContentsValue;
 
   @override
   void initState() {
