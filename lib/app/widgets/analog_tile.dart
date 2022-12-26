@@ -1,13 +1,13 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:multiparingbase/app/data/models/models.dart';
+import 'package:multiparingbase/app/data/models/sensor_types/analog.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
-class StrainGaugeTile extends StatelessWidget {
-  final StrainGauge sensor;
-  final List<StrainGaugeSignal> signal;
+class AnalogTile extends StatelessWidget {
+  final Analog sensor;
+  final List<AnalogSignal> signal;
 
-  const StrainGaugeTile({
+  const AnalogTile({
     super.key,
     required this.sensor,
     required this.signal,
@@ -24,7 +24,7 @@ class StrainGaugeTile extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  sensor.device.name ?? '',
+                  sensor.device.name,
                   style: const TextStyle(fontSize: 25),
                 ),
                 const Spacer(),
@@ -86,7 +86,7 @@ class StrainGaugeTile extends StatelessWidget {
 }
 
 class StrainGaugeSettingDialog extends StatefulWidget {
-  final StrainGauge sensor;
+  final Analog sensor;
 
   const StrainGaugeSettingDialog({super.key, required this.sensor});
 

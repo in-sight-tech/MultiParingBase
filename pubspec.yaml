@@ -9,9 +9,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: 4.6.5
   permission_handler: 10.2.0
-  flutter_bluetooth_serial: 0.4.0
+  flutter_blue_plus: ^1.3.1
   fl_chart: 0.55.2
-  hive: 2.2.3
   csv: 5.0.1
   intl: 0.17.0
   file_saver: 0.1.1

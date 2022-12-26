@@ -4,12 +4,11 @@ import 'package:get/get.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
+import 'package:multiparingbase/app/widgets/analog_tile.dart';
 import 'package:multiparingbase/app/widgets/app_drawer.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
-import 'package:multiparingbase/app/widgets/bwt901cl_tile.dart';
 import 'package:multiparingbase/app/widgets/custom_floating_action_button.dart';
 import 'package:multiparingbase/app/widgets/imu_tile.dart';
-import 'package:multiparingbase/app/widgets/strain_gauge_tile.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -45,27 +44,7 @@ class HomeView extends GetView<HomeController> {
         builder: (_) => ListView.builder(
           itemCount: _.devices.length,
           itemBuilder: (context, index) {
-            if (_.devices[index] is BWT901CL) {
-              BWT901CL sensor = _.devices[index] as BWT901CL;
-
-              return GetBuilder<HomeController>(
-                id: 'tile',
-                builder: (_) => BWT901CLTile(
-                  sensor: sensor,
-                  signal: _.datas[index].map((e) => e as BWT901CLSignal).toList(),
-                ),
-              );
-            } else if (_.devices[index] is StrainGauge) {
-              StrainGauge sensor = _.devices[index] as StrainGauge;
-
-              return GetBuilder<HomeController>(
-                id: 'tile',
-                builder: (_) => StrainGaugeTile(
-                  sensor: sensor,
-                  signal: _.datas[index].map((e) => e as StrainGaugeSignal).toList(),
-                ),
-              );
-            } else if (_.devices[index] is Imu) {
+            if (_.devices[index] is Imu) {
               Imu sensor = _.devices[index] as Imu;
 
               return GetBuilder<HomeController>(
@@ -73,6 +52,16 @@ class HomeView extends GetView<HomeController> {
                 builder: (_) => ImuTile(
                   sensor: sensor,
                   signal: _.datas[index].map((e) => e as ImuSignal).toList(),
+                ),
+              );
+            } else if (_.devices[index] is Analog) {
+              Analog sensor = _.devices[index] as Analog;
+
+              return GetBuilder<HomeController>(
+                id: 'tile',
+                builder: (_) => AnalogTile(
+                  sensor: sensor,
+                  signal: _.datas[index].map((e) => e as AnalogSignal).toList(),
                 ),
               );
             } else {

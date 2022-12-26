@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:logger/logger.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals/imu_signal.dart';
 
@@ -30,35 +31,44 @@ class Imu extends SensorBase {
 
   @override
   void disconnect() {
-    connection?.dispose();
+    device.disconnect();
   }
 
   @override
   Future<bool> connect() async {
     try {
-      connection = await BluetoothConnection.toAddress(device.address);
+      Logger().i('Connecting to ${device.name}...');
 
-      if (connection?.isConnected == false) throw 'Connect error';
+      await device.connect(autoConnect: false);
 
-      await setSamplingRate(samplingRate);
-      await setReturnContent(returnContents);
-
-      connection?.input?.listen((Uint8List packets) {
-        // Logger().i(packets.map((e) => e < 16 ? '0x0${e.toRadixString(16)}' : '0x${e.toRadixString(16)}'));
-        for (int byte in packets) {
-          while (buffer.length > 12) {
-            if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
-              calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
-              buffer.clear();
-            } else {
-              buffer.removeFirst();
-            }
-          }
-          buffer.add(byte);
+      device.state.listen((BluetoothDeviceState state) {
+        if (state == BluetoothDeviceState.disconnected) {
+          dispose?.call(this);
         }
-      }).onDone(() {
-        dispose?.call(this);
       });
+
+      services = await device.discoverServices();
+
+      for (BluetoothService service in services) {
+        for (BluetoothCharacteristic characteristic in service.characteristics) {
+          if (characteristic.properties.notify == true) {
+            characteristic.setNotifyValue(true);
+            characteristic.value.listen((List<int> packets) {
+              for (int byte in packets) {
+                while (buffer.length > 12) {
+                  if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
+                    calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
+                    buffer.clear();
+                  } else {
+                    buffer.removeFirst();
+                  }
+                }
+                buffer.add(byte);
+              }
+            });
+          }
+        }
+      }
 
       return true;
     } catch (e) {
@@ -154,8 +164,8 @@ class Imu extends SensorBase {
   }
 
   Future<void> writeReg({required dynamic addr, required dynamic data, int delayMs = 0}) async {
-    connection?.output.add(Uint8List.fromList([0xFF, 0xAA, addr, data & 0xff, (data >> 8) & 0xff]));
-    await Future.delayed(Duration(milliseconds: delayMs));
+    // connection?.output.add(Uint8List.fromList([0xFF, 0xAA, addr, data & 0xff, (data >> 8) & 0xff]));
+    // await Future.delayed(Duration(milliseconds: delayMs));
   }
 
   @override

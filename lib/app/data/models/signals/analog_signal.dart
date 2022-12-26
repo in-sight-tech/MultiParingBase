@@ -1,10 +1,10 @@
 import 'package:multiparingbase/app/data/models/signals.dart';
 
-class StrainGuageSignal extends SignalBase {
+class AnalogSignal extends SignalBase {
   int? time;
   double? value;
 
-  StrainGuageSignal({this.time});
+  AnalogSignal({this.time});
 
   @override
   List<double?> toList() {

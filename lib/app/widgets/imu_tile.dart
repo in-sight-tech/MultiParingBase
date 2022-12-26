@@ -152,7 +152,7 @@ class _ImuTileState extends State<ImuTile> {
             child: Row(
               children: [
                 Text(
-                  widget.sensor.device.name ?? '',
+                  widget.sensor.device.name,
                   style: const TextStyle(fontSize: 25),
                 ),
                 const Spacer(),
@@ -320,7 +320,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.sensor.device.name ?? '',
+              widget.sensor.device.name,
               style: const TextStyle(fontSize: 20),
             ),
             const Divider(),
