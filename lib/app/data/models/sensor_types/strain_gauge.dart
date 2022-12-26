@@ -10,8 +10,7 @@ import 'package:multiparingbase/app/data/models/signals.dart';
 class StrainGauge extends SensorBase {
   late StrainGaugeSignal signal;
 
-  final Function(StrainGauge, StrainGaugeSignal)? onRealTimeSignal;
-  final Function(StrainGauge, List<StrainGaugeSignal>)? onData;
+  final Function(StrainGauge, StrainGaugeSignal)? onData;
   final Function(StrainGauge)? dispose;
 
   void Function()? onResponse;
@@ -37,9 +36,8 @@ class StrainGauge extends SensorBase {
 
   StrainGauge({
     required BluetoothDevice device,
-    this.onData,
     this.dispose,
-    this.onRealTimeSignal,
+    this.onData,
   }) {
     super.device = device;
     samplingRate = 100;
@@ -54,6 +52,7 @@ class StrainGauge extends SensorBase {
       if (connection?.isConnected == false) throw 'Connect error';
 
       connection?.input?.listen((Uint8List packets) {
+        Logger().i(packets.map((e) => e < 16 ? '0x0${e.toRadixString(16)}' : '0x${e.toRadixString(16)}'));
         if (packets.isEmpty) return;
 
         switch (mode) {
@@ -67,7 +66,7 @@ class StrainGauge extends SensorBase {
             fileTransferMode(packets);
             break;
         }
-      }).onDone(() {
+      }, onDone: () {
         dispose?.call(this);
       });
 
@@ -101,22 +100,7 @@ class StrainGauge extends SensorBase {
 
     signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3;
 
-    onRealTimeSignal?.call(this, signal);
-    // if (predictTime == signal.time) {
-    //   predictTime = predictTime! + tick;
-
-    //   onRealTimeSignal?.call(this, signal);
-    // } else {
-    //   while (predictTime! < signal.time!) {
-    //     onRealTimeSignal?.call(this, StrainGaugeSignal(time: predictTime));
-    //     predictTime = predictTime! + tick;
-    //   }
-
-    //   onRealTimeSignal?.call(this, signal);
-    //   if (predictTime! < signal.time!) {
-    //     predictTime = predictTime! + tick;
-    //   }
-    // }
+    onData?.call(this, signal);
   }
 
   @override

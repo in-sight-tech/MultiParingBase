@@ -60,6 +60,8 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
   }
 
   bluetoothDiscovery() {
+    FlutterBluetoothSerial.instance.requestEnable();
+
     isDiscovering = true;
     results.clear();
     update();

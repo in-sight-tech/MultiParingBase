@@ -2,12 +2,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
-import 'package:multiparingbase/app/data/models/signals/Imu_signal.dart';
+import 'package:multiparingbase/app/data/models/signals/imu_signal.dart';
 
 class Imu extends SensorBase {
   late ImuSignal signal;
 
-  Function(Imu, ImuSignal)? onData;
+  Future<void> Function(Imu, ImuSignal)? onData;
   Function(Imu)? dispose;
 
   int? opCode;
@@ -16,6 +16,8 @@ class Imu extends SensorBase {
   String accelerationUnit = 'm/s²';
 
   ImuReturnContents returnContents = ImuReturnContents();
+
+  int bufferLength = 0;
 
   Imu({
     required BluetoothDevice device,
@@ -42,9 +44,10 @@ class Imu extends SensorBase {
       await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
+        // Logger().i(packets.map((e) => e < 16 ? '0x0${e.toRadixString(16)}' : '0x${e.toRadixString(16)}'));
         for (int byte in packets) {
-          while (buffer.length > 10) {
-            if (buffer.elementAt(0) == 0x55) {
+          while (buffer.length > 12) {
+            if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
               calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
               buffer.clear();
             } else {
@@ -65,51 +68,30 @@ class Imu extends SensorBase {
   }
 
   void calSignal(ByteData bytes) async {
-    if (opCode == null) {
-      signal = ImuSignal();
-    } else if (opCode! > bytes.getInt8(1)) {
-      onData?.call(this, signal);
+    signal = ImuSignal();
 
-      signal = ImuSignal();
+    biasTime ??= bytes.getInt32(2, Endian.little);
+    signal.time = bytes.getInt32(2, Endian.little);
+
+    signal.ax = (bytes.getInt16(6, Endian.little) / 32768) * 16;
+    signal.ay = (bytes.getInt16(8, Endian.little) / 32768) * 16;
+    signal.az = (bytes.getInt16(10, Endian.little) / 32768) * 16;
+
+    if (accelerationUnit == 'm/s²') {
+      signal.ax = signal.ax! * 9.80665;
+      signal.ay = signal.ay! * 9.80665;
+      signal.az = signal.az! * 9.80665;
     }
 
-    switch (bytes.getInt8(1)) {
-      case 0x50:
-        opCode = 0x50;
-        biasTime ??= bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little);
-        signal.time = bytes.getInt8(5) * 60 * 60 * 1000 + bytes.getInt8(6) * 60 * 1000 + bytes.getInt8(7) * 1000 + bytes.getInt16(8, Endian.little) - biasTime!;
-        break;
-      case 0x51:
-        if (opCode == null) return;
-        opCode = 0x51;
+    // signal.wx = (bytes.getInt16(2, Endian.little) / 32768) * 2000;
+    // signal.wy = (bytes.getInt16(4, Endian.little) / 32768) * 2000;
+    // signal.wz = (bytes.getInt16(6, Endian.little) / 32768) * 2000;
 
-        signal.ax = (bytes.getInt16(2, Endian.little) / 32768) * 16;
-        signal.ay = (bytes.getInt16(4, Endian.little) / 32768) * 16;
-        signal.az = (bytes.getInt16(6, Endian.little) / 32768) * 16;
+    // signal.roll = (bytes.getInt16(2, Endian.little) / 32768) * 180;
+    // signal.pitch = (bytes.getInt16(4, Endian.little) / 32768) * 180;
+    // signal.yaw = (bytes.getInt16(6, Endian.little) / 32768) * 180;
 
-        if (accelerationUnit == 'm/s²') {
-          signal.ax = signal.ax! * 9.80665;
-          signal.ay = signal.ay! * 9.80665;
-          signal.az = signal.az! * 9.80665;
-        }
-        break;
-      case 0x52:
-        if (opCode == null) return;
-        opCode = 0x52;
-
-        signal.wx = (bytes.getInt16(2, Endian.little) / 32768) * 2000;
-        signal.wy = (bytes.getInt16(4, Endian.little) / 32768) * 2000;
-        signal.wz = (bytes.getInt16(6, Endian.little) / 32768) * 2000;
-        break;
-      case 0x53:
-        if (opCode == null) return;
-        opCode = 0x53;
-
-        signal.roll = (bytes.getInt16(2, Endian.little) / 32768) * 180;
-        signal.pitch = (bytes.getInt16(4, Endian.little) / 32768) * 180;
-        signal.yaw = (bytes.getInt16(6, Endian.little) / 32768) * 180;
-        break;
-    }
+    onData?.call(this, signal);
   }
 
   Future<bool> setUnit(String unit) async {
@@ -119,11 +101,6 @@ class Imu extends SensorBase {
   }
 
   Future<bool> calibrate() async {
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x01, data: 0x0001, delayMs: 3000);
-    await writeReg(addr: 0x01, data: 0x0000, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x01, data: 0x0001, delayMs: 3000);
     await writeReg(addr: 0x01, data: 0x0000, delayMs: 100);
@@ -155,18 +132,10 @@ class Imu extends SensorBase {
     await writeReg(addr: 0x03, data: frequencyCode[samplingRate], delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x03, data: frequencyCode[samplingRate], delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     return true;
   }
 
   Future<bool> setReturnContent(ImuReturnContents rc) async {
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
@@ -177,10 +146,6 @@ class Imu extends SensorBase {
   }
 
   Future<bool> setBandwidth(int bandwidth) async {
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x1F, data: bandwidth, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x1F, data: bandwidth, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);

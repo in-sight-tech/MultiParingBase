@@ -101,7 +101,7 @@ class HomeController extends GetxController {
     } else if (type == SensorType.strainGauge) {
       sensor = StrainGauge(
         device: device,
-        onRealTimeSignal: (StrainGauge sensor, StrainGaugeSignal signal) async {
+        onData: (StrainGauge sensor, StrainGaugeSignal signal) async {
           int index = devices.indexOf(sensor);
 
           datas[index].removeAt(0);
@@ -141,18 +141,18 @@ class HomeController extends GetxController {
     } else if (type == SensorType.imu) {
       sensor = Imu(
         device: device,
-        // onData: (Imu sensor, ImuSignal signal) async {
-        //   // int index = devices.indexOf(sensor);
+        onData: (Imu sensor, ImuSignal signal) async {
+          int index = devices.indexOf(sensor);
 
-        //   // datas[index].removeAt(0);
-        //   // datas[index].add(signal);
+          datas[index].removeAt(0);
+          datas[index].add(signal);
 
-        //   // if (recordState == RecordStates.recording) {
-        //   //   isar.writeTxnSync(() {
-        //   //     isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
-        //   //   });
-        //   // }
-        // },
+          if (recordState == RecordStates.recording) {
+            isar.writeTxnSync(() {
+              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.device.address, signals: signal.toList()));
+            });
+          }
+        },
         dispose: (Imu sensor) {
           removeDevice(sensor);
         },

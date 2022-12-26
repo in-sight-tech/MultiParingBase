@@ -46,7 +46,6 @@ class BWT901CL extends SensorBase {
       await setReturnContent(returnContents);
 
       connection?.input?.listen((Uint8List packets) {
-        // print(packets);
         for (int byte in packets) {
           while (buffer.length > 10) {
             if (buffer.elementAt(0) == 0x55) {
@@ -150,11 +149,6 @@ class BWT901CL extends SensorBase {
     await writeReg(addr: 0x01, data: 0x0000, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x01, data: 0x0001, delayMs: 3000);
-    await writeReg(addr: 0x01, data: 0x0000, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     return true;
   }
 
@@ -182,18 +176,10 @@ class BWT901CL extends SensorBase {
     await writeReg(addr: 0x03, data: frequencyCode[samplingRate], delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
 
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x03, data: frequencyCode[samplingRate], delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     return true;
   }
 
   Future<bool> setReturnContent(Bwt901clReturnContents rc) async {
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x02, data: rc.config, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
@@ -204,10 +190,6 @@ class BWT901CL extends SensorBase {
   }
 
   Future<bool> setBandwidth(int bandwidth) async {
-    await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
-    await writeReg(addr: 0x1F, data: bandwidth, delayMs: 100);
-    await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
-
     await writeReg(addr: 0x69, data: 0xb588, delayMs: 100);
     await writeReg(addr: 0x1F, data: bandwidth, delayMs: 100);
     await writeReg(addr: 0x00, data: 0x0000, delayMs: 100);
