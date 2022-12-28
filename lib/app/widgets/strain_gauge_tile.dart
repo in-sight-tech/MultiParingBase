@@ -1,13 +1,13 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:multiparingbase/app/data/models/sensor_types/analog.dart';
+import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
-class AnalogTile extends StatelessWidget {
-  final Analog sensor;
-  final List<AnalogSignal> signal;
+class StrainGaugeTile extends StatelessWidget {
+  final StrainGauge sensor;
+  final List<StrainGaugeSignal> signal;
 
-  const AnalogTile({
+  const StrainGaugeTile({
     super.key,
     required this.sensor,
     required this.signal,
@@ -31,7 +31,7 @@ class AnalogTile extends StatelessWidget {
                 IconButton(
                   onPressed: () => showDialog(
                     context: context,
-                    builder: (context) => AnalogSettingDialog(
+                    builder: (context) => StrainGaugeSettingDialog(
                       sensor: sensor,
                     ),
                   ),
@@ -70,7 +70,7 @@ class AnalogTile extends StatelessWidget {
                     axisNameWidget: Text(sensor.unit),
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 50,
+                      reservedSize: 45,
                       getTitlesWidget: (value, meta) => Text(value.toStringAsFixed(3)),
                     ),
                   ),
@@ -89,16 +89,16 @@ class AnalogTile extends StatelessWidget {
   }
 }
 
-class AnalogSettingDialog extends StatefulWidget {
-  final Analog sensor;
+class StrainGaugeSettingDialog extends StatefulWidget {
+  final StrainGauge sensor;
 
-  const AnalogSettingDialog({super.key, required this.sensor});
+  const StrainGaugeSettingDialog({super.key, required this.sensor});
 
   @override
-  State<AnalogSettingDialog> createState() => _AnalogSettingDialogState();
+  State<StrainGaugeSettingDialog> createState() => _StrainGaugeSettingDialogState();
 }
 
-class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
+class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
   bool isWaiting = false;
   int? returnRateValue;
 
@@ -106,16 +106,6 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
   void initState() {
     super.initState();
     returnRateValue = widget.sensor.samplingRate;
-
-    widget.sensor.onResponse = () {
-      isWaiting = false;
-      if (mounted) setState(() => {});
-    };
-
-    widget.sensor.onError = () {
-      isWaiting = false;
-      if (mounted) setState(() => {});
-    };
   }
 
   @override
@@ -163,6 +153,14 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
                     ),
                   ],
                 ),
+                ElevatedButton(
+                  onPressed: () {
+                    isWaiting = true;
+                    widget.sensor.calibrate();
+                    setState(() => {});
+                  },
+                  child: const Text('Calibrate'),
+                ),
                 TextField(
                   decoration: const InputDecoration(
                     labelText: 'Calibration Value',
@@ -170,6 +168,15 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
                   keyboardType: TextInputType.number,
                   onSubmitted: (String value) {
                     widget.sensor.setCalibrationValue(double.parse(value));
+                  },
+                ),
+                TextField(
+                  decoration: const InputDecoration(
+                    labelText: 'DeviceName',
+                  ),
+                  keyboardType: TextInputType.number,
+                  onSubmitted: (String value) {
+                    widget.sensor.setName(value);
                   },
                 ),
               ],

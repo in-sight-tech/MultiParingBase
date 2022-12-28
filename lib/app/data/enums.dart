@@ -4,7 +4,6 @@ enum RecordStates {
 }
 
 enum SensorType {
-  bwt901cl,
   strainGauge,
   imu,
   analog,

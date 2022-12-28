@@ -5,33 +5,18 @@ part 'sensor_information.g.dart';
 
 @collection
 class SensorInformation {
-  String id;
-
-  Id get isarId => fastHash(id);
+  Id id;
 
   @Enumerated(EnumType.ordinal)
   SensorType type;
+
+  String deviceName;
 
   List<String> units;
 
   List<String> names;
 
-  SensorInformation({required this.id, required this.type, required this.units, required this.names});
-
-  static int fastHash(String string) {
-    var hash = 0xcbf29ce484222325;
-
-    var i = 0;
-    while (i < string.length) {
-      final codeUnit = string.codeUnitAt(i++);
-      hash ^= codeUnit >> 8;
-      hash *= 0x100000001b3;
-      hash ^= codeUnit & 0xFF;
-      hash *= 0x100000001b3;
-    }
-
-    return hash;
-  }
+  SensorInformation({required this.id, required this.deviceName, required this.type, required this.units, required this.names});
 
   @override
   String toString() {

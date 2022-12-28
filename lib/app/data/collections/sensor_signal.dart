@@ -6,7 +6,7 @@ part 'sensor_signal.g.dart';
 class SensorSignal {
   Id id = Isar.autoIncrement;
 
-  String sensorId;
+  int sensorId;
 
   List<double?> signals;
 

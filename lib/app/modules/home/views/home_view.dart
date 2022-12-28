@@ -9,6 +9,7 @@ import 'package:multiparingbase/app/widgets/app_drawer.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 import 'package:multiparingbase/app/widgets/custom_floating_action_button.dart';
 import 'package:multiparingbase/app/widgets/imu_tile.dart';
+import 'package:multiparingbase/app/widgets/strain_gauge_tile.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -62,6 +63,16 @@ class HomeView extends GetView<HomeController> {
                 builder: (_) => AnalogTile(
                   sensor: sensor,
                   signal: _.datas[index].map((e) => e as AnalogSignal).toList(),
+                ),
+              );
+            } else if (_.devices[index] is StrainGauge) {
+              StrainGauge sensor = _.devices[index] as StrainGauge;
+
+              return GetBuilder<HomeController>(
+                id: 'tile',
+                builder: (_) => StrainGaugeTile(
+                  sensor: sensor,
+                  signal: _.datas[index].map((e) => e as StrainGaugeSignal).toList(),
                 ),
               );
             } else {

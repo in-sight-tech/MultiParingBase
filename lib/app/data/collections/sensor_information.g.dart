@@ -17,9 +17,9 @@ const SensorInformationSchema = CollectionSchema(
   name: r'SensorInformation',
   id: 3020779261061262747,
   properties: {
-    r'id': PropertySchema(
+    r'deviceName': PropertySchema(
       id: 0,
-      name: r'id',
+      name: r'deviceName',
       type: IsarType.string,
     ),
     r'names': PropertySchema(
@@ -43,7 +43,7 @@ const SensorInformationSchema = CollectionSchema(
   serialize: _sensorInformationSerialize,
   deserialize: _sensorInformationDeserialize,
   deserializeProp: _sensorInformationDeserializeProp,
-  idName: r'isarId',
+  idName: r'id',
   indexes: {},
   links: {},
   embeddedSchemas: {},
@@ -59,7 +59,7 @@ int _sensorInformationEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.id.length * 3;
+  bytesCount += 3 + object.deviceName.length * 3;
   bytesCount += 3 + object.names.length * 3;
   {
     for (var i = 0; i < object.names.length; i++) {
@@ -83,7 +83,7 @@ void _sensorInformationSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.id);
+  writer.writeString(offsets[0], object.deviceName);
   writer.writeStringList(offsets[1], object.names);
   writer.writeByte(offsets[2], object.type.index);
   writer.writeStringList(offsets[3], object.units);
@@ -96,11 +96,12 @@ SensorInformation _sensorInformationDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = SensorInformation(
-    id: reader.readString(offsets[0]),
+    deviceName: reader.readString(offsets[0]),
+    id: id,
     names: reader.readStringList(offsets[1]) ?? [],
     type:
         _SensorInformationtypeValueEnumMap[reader.readByteOrNull(offsets[2])] ??
-            SensorType.bwt901cl,
+            SensorType.strainGauge,
     units: reader.readStringList(offsets[3]) ?? [],
   );
   return object;
@@ -120,7 +121,7 @@ P _sensorInformationDeserializeProp<P>(
     case 2:
       return (_SensorInformationtypeValueEnumMap[
               reader.readByteOrNull(offset)] ??
-          SensorType.bwt901cl) as P;
+          SensorType.strainGauge) as P;
     case 3:
       return (reader.readStringList(offset) ?? []) as P;
     default:
@@ -129,20 +130,18 @@ P _sensorInformationDeserializeProp<P>(
 }
 
 const _SensorInformationtypeEnumValueMap = {
-  'bwt901cl': 0,
-  'strainGauge': 1,
-  'imu': 2,
-  'analog': 3,
+  'strainGauge': 0,
+  'imu': 1,
+  'analog': 2,
 };
 const _SensorInformationtypeValueEnumMap = {
-  0: SensorType.bwt901cl,
-  1: SensorType.strainGauge,
-  2: SensorType.imu,
-  3: SensorType.analog,
+  0: SensorType.strainGauge,
+  1: SensorType.imu,
+  2: SensorType.analog,
 };
 
 Id _sensorInformationGetId(SensorInformation object) {
-  return object.isarId;
+  return object.id;
 }
 
 List<IsarLinkBase<dynamic>> _sensorInformationGetLinks(
@@ -151,11 +150,13 @@ List<IsarLinkBase<dynamic>> _sensorInformationGetLinks(
 }
 
 void _sensorInformationAttach(
-    IsarCollection<dynamic> col, Id id, SensorInformation object) {}
+    IsarCollection<dynamic> col, Id id, SensorInformation object) {
+  object.id = id;
+}
 
 extension SensorInformationQueryWhereSort
     on QueryBuilder<SensorInformation, SensorInformation, QWhere> {
-  QueryBuilder<SensorInformation, SensorInformation, QAfterWhere> anyIsarId() {
+  QueryBuilder<SensorInformation, SensorInformation, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
@@ -165,68 +166,68 @@ extension SensorInformationQueryWhereSort
 extension SensorInformationQueryWhere
     on QueryBuilder<SensorInformation, SensorInformation, QWhereClause> {
   QueryBuilder<SensorInformation, SensorInformation, QAfterWhereClause>
-      isarIdEqualTo(Id isarId) {
+      idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
+        lower: id,
+        upper: id,
       ));
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
+      idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             )
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             );
       } else {
         return query
             .addWhereClause(
-              IdWhereClause.greaterThan(lower: isarId, includeLower: false),
+              IdWhereClause.greaterThan(lower: id, includeLower: false),
             )
             .addWhereClause(
-              IdWhereClause.lessThan(upper: isarId, includeUpper: false),
+              IdWhereClause.lessThan(upper: id, includeUpper: false),
             );
       }
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
+      idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: isarId, includeLower: include),
+        IdWhereClause.greaterThan(lower: id, includeLower: include),
       );
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
+      idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IdWhereClause.lessThan(upper: isarId, includeUpper: include),
+        IdWhereClause.lessThan(upper: id, includeUpper: include),
       );
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterWhereClause>
-      isarIdBetween(
-    Id lowerIsarId,
-    Id upperIsarId, {
+      idBetween(
+    Id lowerId,
+    Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
+        lower: lowerId,
         includeLower: includeLower,
-        upper: upperIsarId,
+        upper: upperId,
         includeUpper: includeUpper,
       ));
     });
@@ -236,13 +237,13 @@ extension SensorInformationQueryWhere
 extension SensorInformationQueryFilter
     on QueryBuilder<SensorInformation, SensorInformation, QFilterCondition> {
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idEqualTo(
+      deviceNameEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
+        property: r'deviceName',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -250,7 +251,7 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idGreaterThan(
+      deviceNameGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -258,7 +259,7 @@ extension SensorInformationQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'id',
+        property: r'deviceName',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -266,7 +267,7 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idLessThan(
+      deviceNameLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -274,7 +275,7 @@ extension SensorInformationQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'id',
+        property: r'deviceName',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -282,7 +283,7 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idBetween(
+      deviceNameBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -291,7 +292,7 @@ extension SensorInformationQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
+        property: r'deviceName',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -302,13 +303,13 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idStartsWith(
+      deviceNameStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
+        property: r'deviceName',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -316,13 +317,13 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idEndsWith(
+      deviceNameEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
+        property: r'deviceName',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -330,10 +331,10 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idContains(String value, {bool caseSensitive = true}) {
+      deviceNameContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
+        property: r'deviceName',
         value: value,
         caseSensitive: caseSensitive,
       ));
@@ -341,10 +342,10 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idMatches(String pattern, {bool caseSensitive = true}) {
+      deviceNameMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
+        property: r'deviceName',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
@@ -352,65 +353,65 @@ extension SensorInformationQueryFilter
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idIsEmpty() {
+      deviceNameIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
+        property: r'deviceName',
         value: '',
       ));
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      idIsNotEmpty() {
+      deviceNameIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
+        property: r'deviceName',
         value: '',
       ));
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
+      idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      isarIdGreaterThan(
+      idGreaterThan(
     Id value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'isarId',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      isarIdLessThan(
+      idLessThan(
     Id value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'isarId',
+        property: r'id',
         value: value,
       ));
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterFilterCondition>
-      isarIdBetween(
+      idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -418,7 +419,7 @@ extension SensorInformationQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
+        property: r'id',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -942,16 +943,17 @@ extension SensorInformationQueryLinks
 
 extension SensorInformationQuerySortBy
     on QueryBuilder<SensorInformation, SensorInformation, QSortBy> {
-  QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy> sortById() {
+  QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy>
+      sortByDeviceName() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
+      return query.addSortBy(r'deviceName', Sort.asc);
     });
   }
 
   QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy>
-      sortByIdDesc() {
+      sortByDeviceNameDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
+      return query.addSortBy(r'deviceName', Sort.desc);
     });
   }
 
@@ -972,6 +974,20 @@ extension SensorInformationQuerySortBy
 
 extension SensorInformationQuerySortThenBy
     on QueryBuilder<SensorInformation, SensorInformation, QSortThenBy> {
+  QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy>
+      thenByDeviceName() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deviceName', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy>
+      thenByDeviceNameDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deviceName', Sort.desc);
+    });
+  }
+
   QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -982,20 +998,6 @@ extension SensorInformationQuerySortThenBy
       thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
-    });
-  }
-
-  QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy>
-      thenByIsarId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<SensorInformation, SensorInformation, QAfterSortBy>
-      thenByIsarIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isarId', Sort.desc);
     });
   }
 
@@ -1016,10 +1018,10 @@ extension SensorInformationQuerySortThenBy
 
 extension SensorInformationQueryWhereDistinct
     on QueryBuilder<SensorInformation, SensorInformation, QDistinct> {
-  QueryBuilder<SensorInformation, SensorInformation, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
+  QueryBuilder<SensorInformation, SensorInformation, QDistinct>
+      distinctByDeviceName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'deviceName', caseSensitive: caseSensitive);
     });
   }
 
@@ -1047,15 +1049,16 @@ extension SensorInformationQueryWhereDistinct
 
 extension SensorInformationQueryProperty
     on QueryBuilder<SensorInformation, SensorInformation, QQueryProperty> {
-  QueryBuilder<SensorInformation, int, QQueryOperations> isarIdProperty() {
+  QueryBuilder<SensorInformation, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isarId');
+      return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<SensorInformation, String, QQueryOperations> idProperty() {
+  QueryBuilder<SensorInformation, String, QQueryOperations>
+      deviceNameProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
+      return query.addPropertyName(r'deviceName');
     });
   }
 

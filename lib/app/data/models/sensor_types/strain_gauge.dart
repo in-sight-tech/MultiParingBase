@@ -5,18 +5,14 @@ import 'package:intl/intl.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
-class Analog extends SensorBase {
-  void Function()? onResponse;
-  void Function()? onError;
-
-  int? predictTime;
-  int? biasTime;
+class StrainGauge extends SensorBase {
+  int? startTime;
 
   int? preByte;
 
   String unit = 'mm';
 
-  Analog({
+  StrainGauge({
     required BluetoothDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
@@ -31,7 +27,7 @@ class Analog extends SensorBase {
   @override
   Future<bool> connect() async {
     try {
-      await device.connect(autoConnect: false);
+      await device.connect(timeout: const Duration(seconds: 4), autoConnect: false);
 
       stream = device.state.listen(listenState);
 
@@ -44,11 +40,12 @@ class Analog extends SensorBase {
 
   @override
   void calSignal(ByteData bytes) async {
-    AnalogSignal signal = AnalogSignal();
+    StrainGaugeSignal signal = StrainGaugeSignal();
 
-    biasTime ??= bytes.getInt32(4, Endian.little);
-    signal.time = bytes.getInt32(4, Endian.little) - biasTime!;
-    predictTime ??= signal.time!;
+    if (isValiable(bytes) == false) return;
+
+    startTime ??= bytes.getInt32(4, Endian.little);
+    signal.time = bytes.getInt32(4, Endian.little) - startTime!;
 
     signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3;
 
@@ -58,16 +55,26 @@ class Analog extends SensorBase {
   @override
   void disconnect() => device.disconnect();
 
+  void setUnit(String unit) {
+    this.unit = unit;
+    writeReg(data: '<su$unit>');
+  }
+
   @override
   void setSamplingRate(int samplingRate) => writeReg(data: '<sor$samplingRate>');
 
   @override
-  void start() => writeReg(data: '<si${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}>');
+  void start() {
+    startTime = null;
+    writeReg(data: '<si${DateFormat('yyyyMMddHHmmss').format(DateTime.now())}>');
+  }
 
   @override
   void stop() => writeReg(data: '<eoi>');
 
   void calibrate() => writeReg(data: '<zc>');
 
+  void setName(String name) => writeReg(data: '<sn$name>');
+  
   void setCalibrationValue(double value) => writeReg(data: '<cv$value>');
 }

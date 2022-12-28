@@ -19,7 +19,7 @@ class BluetoothDiscovery extends StatefulWidget {
 
 class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
   int stepperIndex = 0;
-  SensorType? sensorTypeValue = SensorType.bwt901cl;
+  SensorType? sensorTypeValue = SensorType.values[0];
   BluetoothDevice? sensorValue;
 
   bool isDiscovering = true;
@@ -60,7 +60,6 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
   }
 
   bluetoothDiscovery() {
-    // isDiscovering = true;
     results.clear();
     update();
 
@@ -137,16 +136,6 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
                 children: [
                   Card(
                     child: RadioListTile(
-                      value: SensorType.bwt901cl,
-                      groupValue: sensorTypeValue,
-                      title: const Text('BWT901CL'),
-                      onChanged: (value) => setState(() {
-                        sensorTypeValue = value;
-                      }),
-                    ),
-                  ),
-                  Card(
-                    child: RadioListTile(
                       value: SensorType.strainGauge,
                       groupValue: sensorTypeValue,
                       title: const Text('Strain Gauge'),
@@ -191,7 +180,6 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
                           value: r.device,
                           groupValue: sensorValue,
                           title: Text(r.device.name),
-                          // subtitle: Text(),
                           onChanged: (value) => setState(() {
                             sensorValue = value;
                           }),
@@ -202,7 +190,11 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
                       padding: EdgeInsets.only(top: 16.0),
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                  if (!isDiscovering) TextButton(onPressed: bluetoothDiscovery, child: const Text('다시 검색'))
+                  if (!isDiscovering)
+                    TextButton(
+                      onPressed: bluetoothDiscovery,
+                      child: const Text('다시 검색'),
+                    )
                 ],
               ),
             ),

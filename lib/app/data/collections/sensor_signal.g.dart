@@ -20,7 +20,7 @@ const SensorSignalSchema = CollectionSchema(
     r'sensorId': PropertySchema(
       id: 0,
       name: r'sensorId',
-      type: IsarType.string,
+      type: IsarType.long,
     ),
     r'signals': PropertySchema(
       id: 1,
@@ -48,7 +48,6 @@ int _sensorSignalEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.sensorId.length * 3;
   bytesCount += 3 + object.signals.length * 8;
   return bytesCount;
 }
@@ -59,7 +58,7 @@ void _sensorSignalSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.sensorId);
+  writer.writeLong(offsets[0], object.sensorId);
   writer.writeDoubleList(offsets[1], object.signals);
 }
 
@@ -70,7 +69,7 @@ SensorSignal _sensorSignalDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = SensorSignal(
-    sensorId: reader.readString(offsets[0]),
+    sensorId: reader.readLong(offsets[0]),
     signals: reader.readDoubleOrNullList(offsets[1]) ?? [],
   );
   object.id = id;
@@ -85,7 +84,7 @@ P _sensorSignalDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 1:
       return (reader.readDoubleOrNullList(offset) ?? []) as P;
     default:
@@ -241,58 +240,49 @@ extension SensorSignalQueryFilter
   }
 
   QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      sensorIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'sensorId',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
       sensorIdGreaterThan(
-    String value, {
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'sensorId',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
       sensorIdLessThan(
-    String value, {
+    int value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'sensorId',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
       sensorIdBetween(
-    String lower,
-    String upper, {
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -301,77 +291,6 @@ extension SensorSignalQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'sensorId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'sensorId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'sensorId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'sensorId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'sensorId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<SensorSignal, SensorSignal, QAfterFilterCondition>
-      sensorIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'sensorId',
-        value: '',
       ));
     });
   }
@@ -600,10 +519,9 @@ extension SensorSignalQuerySortThenBy
 
 extension SensorSignalQueryWhereDistinct
     on QueryBuilder<SensorSignal, SensorSignal, QDistinct> {
-  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctBySensorId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<SensorSignal, SensorSignal, QDistinct> distinctBySensorId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'sensorId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'sensorId');
     });
   }
 
@@ -622,7 +540,7 @@ extension SensorSignalQueryProperty
     });
   }
 
-  QueryBuilder<SensorSignal, String, QQueryOperations> sensorIdProperty() {
+  QueryBuilder<SensorSignal, int, QQueryOperations> sensorIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'sensorId');
     });
