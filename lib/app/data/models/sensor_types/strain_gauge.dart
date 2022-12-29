@@ -75,6 +75,6 @@ class StrainGauge extends SensorBase {
   void calibrate() => writeReg(data: '<zc>');
 
   void setName(String name) => writeReg(data: '<sn$name>');
-  
+
   void setCalibrationValue(double value) => writeReg(data: '<cv$value>');
 }

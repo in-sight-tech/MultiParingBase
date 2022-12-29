@@ -10,9 +10,12 @@ import 'package:multiparingbase/app/data/models/signals/signal_base.dart';
 abstract class SensorBase {
   late BluetoothDevice device;
   BluetoothCharacteristic? writeCharacteristic;
+  BluetoothCharacteristic? readCharacteristic;
+  BluetoothCharacteristic? notifyCharacteristic;
   Queue<int> buffer = Queue<int>();
   late int bufferLength;
-  late StreamSubscription stream;
+  late StreamSubscription? stream;
+  Map<String, dynamic> information = {};
 
   Logger logger = Logger();
 
@@ -48,7 +51,7 @@ abstract class SensorBase {
     switch (state) {
       case BluetoothDeviceState.disconnected:
         logger.i('${device.name} disconnected');
-        stream.cancel();
+        stream?.cancel();
         dispose?.call(this);
         break;
       case BluetoothDeviceState.connecting:
@@ -61,25 +64,30 @@ abstract class SensorBase {
           if (service.uuid != Guid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")) continue;
           for (BluetoothCharacteristic characteristic in service.characteristics) {
             if (characteristic.properties.notify == true) {
-              characteristic.setNotifyValue(true);
-              characteristic.value.listen((List<int> packets) {
-                for (int byte in packets) {
-                  while (buffer.length >= bufferLength) {
-                    if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
-                      calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
-                      buffer.clear();
-                    } else {
-                      buffer.removeFirst();
-                    }
-                  }
-                  buffer.add(byte);
-                }
-              });
+              notifyCharacteristic = characteristic;
             } else if (characteristic.properties.write == true) {
               writeCharacteristic = characteristic;
-            } else if (characteristic.properties.read == true) {}
+            } else if (characteristic.properties.read == true) {
+              readCharacteristic = characteristic;
+            }
           }
         }
+        information = jsonDecode(String.fromCharCodes(await readCharacteristic?.read() ?? []));
+
+        notifyCharacteristic?.setNotifyValue(true);
+        stream = notifyCharacteristic?.value.listen((List<int> packets) {
+          for (int byte in packets) {
+            while (buffer.length >= bufferLength) {
+              if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
+                calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
+                buffer.clear();
+              } else {
+                buffer.removeFirst();
+              }
+            }
+            buffer.add(byte);
+          }
+        });
         break;
       case BluetoothDeviceState.disconnecting:
         logger.i('Disconnecting from ${device.name}...');

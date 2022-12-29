@@ -43,7 +43,8 @@ class HomeController extends GetxController {
 
     if (isar.isOpen) isar.close();
 
-    _timer.cancel();
+    if (_timer.isActive) _timer.cancel();
+
     for (SensorBase device in devices) {
       device.disconnect();
     }
@@ -63,136 +64,66 @@ class HomeController extends GetxController {
     if (type == SensorType.imu) {
       sensor = Imu(
         device: device,
-        onData: (sensor, signal) async {
-          int index = devices.indexOf(sensor);
-
-          if (index == -1) return;
-
-          datas[index].add(signal);
-          if (datas[index].length > bufferLength) {
-            datas[index].removeAt(0);
-          }
-
-          if (recordState == RecordStates.recording) {
-            isar.writeTxnSync(() {
-              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.hashCode, signals: signal.toList()));
-            });
-          }
-        },
-        dispose: (sensor) {
-          removeDevice(sensor);
-        },
+        onData: onData,
+        dispose: onDispose,
       );
-
-      if (await sensor.connect()) {
-        Get.back();
-        devices.add(sensor);
-        datas.add(RxList.generate(bufferLength, (index) => ImuSignal()));
-
-        update(['deviceList']);
-      } else {
-        Get.back();
-
-        Get.defaultDialog(
-          title: '연결 실패',
-          content: const Icon(
-            Icons.error_outline,
-            size: 40,
-            color: Colors.red,
-          ),
-        );
-
-        Future.delayed(const Duration(seconds: 3), Get.back);
-      }
-    } else if (type == SensorType.analog) {
+    }
+    if (type == SensorType.analog) {
       sensor = Analog(
         device: device,
-        onData: (sensor, signal) async {
-          int index = devices.indexOf(sensor);
-
-          if (index == -1) return;
-
-          datas[index].add(signal);
-          if (datas[index].length > bufferLength) {
-            datas[index].removeAt(0);
-          }
-
-          if (recordState == RecordStates.recording) {
-            isar.writeTxnSync(() {
-              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.hashCode, signals: signal.toList()));
-            });
-          }
-        },
-        dispose: (sensor) {
-          removeDevice(sensor);
-        },
+        onData: onData,
+        dispose: onDispose,
       );
-
-      if (await sensor.connect()) {
-        Get.back();
-        devices.add(sensor);
-        datas.add(RxList.generate(bufferLength, (index) => AnalogSignal()));
-
-        update(['deviceList']);
-      } else {
-        Get.back();
-
-        Get.defaultDialog(
-          title: '연결 실패',
-          content: const Icon(
-            Icons.error_outline,
-            size: 40,
-            color: Colors.red,
-          ),
-        );
-
-        Future.delayed(const Duration(seconds: 3), Get.back);
-      }
-    } else if (type == SensorType.strainGauge) {
+    }
+    if (type == SensorType.strainGauge) {
       sensor = StrainGauge(
         device: device,
-        onData: (sensor, signal) async {
-          int index = devices.indexOf(sensor);
+        onData: onData,
+        dispose: onDispose,
+      );
+    }
 
-          if (index == -1) return;
+    if (await sensor.connect()) {
+      Get.back();
+      devices.add(sensor);
+      datas.add(RxList());
 
-          datas[index].add(signal);
-          if (datas[index].length > bufferLength) {
-            datas[index].removeAt(0);
-          }
+      update(['deviceList']);
+    } else {
+      Get.back();
 
-          if (recordState == RecordStates.recording) {
-            isar.writeTxnSync(() {
-              isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.hashCode, signals: signal.toList()));
-            });
-          }
-        },
-        dispose: (sensor) {
-          removeDevice(sensor);
-        },
+      Get.defaultDialog(
+        title: '연결 실패',
+        content: const Icon(
+          Icons.error_outline,
+          size: 40,
+          color: Colors.red,
+        ),
       );
 
-      if (await sensor.connect()) {
-        Get.back();
-        devices.add(sensor);
-        datas.add(RxList.generate(bufferLength, (index) => StrainGaugeSignal()));
-
-        update(['deviceList']);
-      } else {
-        Get.back();
-
-        Get.defaultDialog(
-          title: '연결 실패',
-          content: const Icon(
-            Icons.error_outline,
-            size: 40,
-            color: Colors.red,
-          ),
-        );
-
-        Future.delayed(const Duration(seconds: 3), Get.back);
-      }
+      Future.delayed(const Duration(seconds: 3), Get.back);
     }
+  }
+
+  void onData(sensor, signal) async {
+    int index = devices.indexOf(sensor);
+
+    if (index == -1) return;
+
+    datas[index].add(signal);
+    if (datas[index].length > bufferLength) {
+      datas[index].removeAt(0);
+    }
+
+    if (recordState == RecordStates.recording) {
+      isar.writeTxnSync(() {
+        isar.sensorSignals.putSync(SensorSignal(sensorId: sensor.hashCode, signals: signal.toList()));
+      });
+    }
+  }
+
+  void onDispose(sensor) {
+    removeDevice(sensor);
   }
 
   void removeDevice(SensorBase sensor) {
@@ -231,9 +162,6 @@ class HomeController extends GetxController {
       isar.writeTxnSync(() {
         isar.sensorSignals.clearSync();
         isar.sensorInformations.clearSync();
-      });
-
-      isar.writeTxnSync(() {
         for (SensorBase device in devices) {
           if (device is Imu) {
             isar.sensorInformations.putSync(SensorInformation(
@@ -243,7 +171,8 @@ class HomeController extends GetxController {
               units: device.returnContents.toUnitList(device.accelerationUnit),
               names: device.returnContents.toNameList(),
             ));
-          } else if (device is Analog) {
+          }
+          if (device is Analog) {
             isar.sensorInformations.putSync(SensorInformation(
               id: device.hashCode,
               deviceName: device.device.name,
@@ -251,7 +180,8 @@ class HomeController extends GetxController {
               units: ['s', device.unit],
               names: ['time', device.unit],
             ));
-          } else if (device is StrainGauge) {
+          }
+          if (device is StrainGauge) {
             isar.sensorInformations.putSync(SensorInformation(
               id: device.hashCode,
               deviceName: device.device.name,
