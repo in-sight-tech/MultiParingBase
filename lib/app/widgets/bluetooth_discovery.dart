@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BluetoothDiscovery extends StatefulWidget {
-  final Function(SensorType, BluetoothDevice)? onTap;
+  final Function(SensorType, DiscoveredDevice)? onTap;
 
   const BluetoothDiscovery({
     super.key,
@@ -18,13 +18,14 @@ class BluetoothDiscovery extends StatefulWidget {
 }
 
 class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
+  final flutterReactiveBle = FlutterReactiveBle();
   int stepperIndex = 0;
   SensorType? sensorTypeValue = SensorType.values[0];
-  BluetoothDevice? sensorValue;
+  DiscoveredDevice? sensorValue;
 
   bool isDiscovering = true;
-  final List<ScanResult> results = <ScanResult>[];
-  StreamSubscription<List<ScanResult>>? streamSubscription;
+  final List<DiscoveredDevice> results = <DiscoveredDevice>[];
+  late StreamSubscription<DiscoveredDevice> streamSubscription;
 
   @override
   void initState() {
@@ -35,8 +36,7 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
 
   @override
   void dispose() {
-    FlutterBluePlus.instance.stopScan();
-
+    streamSubscription.cancel();
     super.dispose();
   }
 
@@ -63,26 +63,11 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
     results.clear();
     update();
 
-    FlutterBluePlus.instance.startScan(timeout: const Duration(seconds: 4));
+    streamSubscription = flutterReactiveBle.scanForDevices(withServices: []).listen((scanResult) {
+      if (results.any((e) => e.id == scanResult.id) || scanResult.name.isEmpty) return;
 
-    FlutterBluePlus.instance.isScanning.listen((isScanning) {
-      if (isScanning) {
-        isDiscovering = true;
-        update();
-      }
-      if (!isScanning) {
-        isDiscovering = false;
-        update();
-      }
-    });
-
-    streamSubscription = FlutterBluePlus.instance.scanResults.listen((results) {
-      for (ScanResult r in results) {
-        if (!this.results.contains(r) && r.device.name.isNotEmpty) {
-          this.results.add(r);
-          update();
-        }
-      }
+      results.add(scanResult);
+      update();
     });
   }
 
@@ -177,9 +162,9 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
                 children: [
                   ...results.map((r) => Card(
                         child: RadioListTile(
-                          value: r.device,
+                          value: r,
                           groupValue: sensorValue,
-                          title: Text(r.device.name),
+                          title: Text(r.name),
                           onChanged: (value) => setState(() {
                             sensorValue = value;
                           }),

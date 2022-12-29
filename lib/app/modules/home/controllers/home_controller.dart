@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
-import 'package:logger/logger.dart';
+import 'package:logger/logger.dart' as log;
 import 'package:multiparingbase/app/data/collections/collections.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
@@ -19,7 +19,7 @@ class HomeController extends GetxController {
   final bufferLength = 400;
   final devices = <SensorBase>[];
   final datas = <RxList<SignalBase>>[];
-  final Logger logger = Logger();
+  final log.Logger logger = log.Logger();
 
   RecordStates recordState = RecordStates.none;
   late Isar isar;
@@ -50,7 +50,7 @@ class HomeController extends GetxController {
     }
   }
 
-  void connectBluetoothDevice(SensorType type, BluetoothDevice device) async {
+  void connectBluetoothDevice(SensorType type, DiscoveredDevice device) async {
     Get.back();
 
     Get.defaultDialog(

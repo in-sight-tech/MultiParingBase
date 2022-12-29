@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:intl/intl.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
@@ -15,9 +15,11 @@ class Analog extends SensorBase {
   int? preByte;
 
   String unit = 'mm';
+  int samplingRate = 200;
+  double calValue = 0.0;
 
   Analog({
-    required BluetoothDevice device,
+    required DiscoveredDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
   }) {
@@ -31,9 +33,17 @@ class Analog extends SensorBase {
   @override
   Future<bool> connect() async {
     try {
-      await device.connect(autoConnect: false);
+      connection = flutterReactiveBle.connectToDevice(id: device.id, connectionTimeout: const Duration(seconds: 4)).listen(
+        (event) {
+          if (event.connectionState == DeviceConnectionState.connected) {
+            logger.i('connected');
+          } else if (event.connectionState == DeviceConnectionState.disconnected) {
+            logger.i('disconnected');
+          }
+        },
+      );
 
-      stream = device.state.listen(listenState);
+      // stream = device.state.listen(listenState);
 
       return true;
     } catch (e) {
@@ -56,7 +66,20 @@ class Analog extends SensorBase {
   }
 
   @override
-  void disconnect() => device.disconnect();
+  void disconnect() => connection.cancel();
+
+  @override
+  void onInformation(Map<String, dynamic> information) {
+    if (information['calibrationValue'] != null) {
+      calValue = information['calibrationValue'];
+    }
+    if (information['unit'] != null) {
+      unit = information['unit'];
+    }
+    if (information['samplingRate'] != null) {
+      samplingRate = information['samplingRate'];
+    }
+  }
 
   @override
   void setSamplingRate(int samplingRate) => writeReg(data: '<sor$samplingRate>');

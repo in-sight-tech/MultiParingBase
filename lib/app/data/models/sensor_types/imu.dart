@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
@@ -11,11 +11,12 @@ class Imu extends SensorBase {
   int? biasTime;
 
   String accelerationUnit = 'm/s²';
+  int samplingRate = 200;
 
   ImuReturnContents returnContents = ImuReturnContents();
 
   Imu({
-    required BluetoothDevice device,
+    required DiscoveredDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
   }) {
@@ -27,16 +28,22 @@ class Imu extends SensorBase {
   }
 
   @override
-  void disconnect() {
-    device.disconnect();
-  }
+  void disconnect() => connection.cancel();
 
   @override
   Future<bool> connect() async {
     try {
-      await device.connect(autoConnect: false);
+      connection = flutterReactiveBle.connectToDevice(id: device.id, connectionTimeout: const Duration(seconds: 4)).listen(
+        (event) {
+          if (event.connectionState == DeviceConnectionState.connected) {
+            logger.i('connected');
+          } else if (event.connectionState == DeviceConnectionState.disconnected) {
+            logger.i('disconnected');
+          }
+        },
+      );
 
-      device.state.listen(listenState);
+      // device.state.listen(listenState);
 
       return true;
     } catch (e) {
@@ -71,6 +78,16 @@ class Imu extends SensorBase {
     // signal.yaw = (bytes.getInt16(6, Endian.little) / 32768) * 180;
 
     onData?.call(this, signal);
+  }
+
+  @override
+  void onInformation(Map<String, dynamic> information) {
+    if (information['unit'] != null) {
+      accelerationUnit = information['unit'];
+    }
+    if (information['samplingRate'] != null) {
+      samplingRate = information['samplingRate'];
+    }
   }
 
   Future<bool> setUnit(String unit) async {

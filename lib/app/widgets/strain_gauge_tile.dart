@@ -102,12 +102,14 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
   bool isWaiting = false;
   int? returnRateValue;
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _calibrationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     returnRateValue = widget.sensor.samplingRate;
     _nameController.text = widget.sensor.device.name;
+    _calibrationController.text = widget.sensor.calValue.toString();
   }
 
   @override
@@ -173,6 +175,7 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
               child: const Text('Calibrate'),
             ),
             TextField(
+              controller: _calibrationController,
               decoration: const InputDecoration(
                 labelText: 'Calibration Value',
               ),

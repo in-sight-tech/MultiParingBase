@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:intl/intl.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
@@ -11,9 +11,11 @@ class StrainGauge extends SensorBase {
   int? preByte;
 
   String unit = 'mm';
+  int samplingRate = 200;
+  double calValue = 0.0;
 
   StrainGauge({
-    required BluetoothDevice device,
+    required DiscoveredDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
   }) {
@@ -27,9 +29,12 @@ class StrainGauge extends SensorBase {
   @override
   Future<bool> connect() async {
     try {
-      await device.connect(timeout: const Duration(seconds: 4), autoConnect: false);
-
-      stream = device.state.listen(listenState);
+      connection = flutterReactiveBle
+          .connectToDevice(
+            id: device.id,
+            connectionTimeout: const Duration(seconds: 4),
+          )
+          .listen(listenState);
 
       return true;
     } catch (e) {
@@ -53,7 +58,18 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  void disconnect() => device.disconnect();
+  void disconnect() {
+    connection.cancel();
+    super.dispose?.call(this);
+  }
+
+  @override
+  void onInformation(Map<String, dynamic> information) {
+    logger.i(information);
+    calValue = double.tryParse(information['calValue'].toString()) ?? 1.0;
+    unit = information['unit'] ?? 'mm';
+    samplingRate = information['sampling_rate'] ?? 100;
+  }
 
   void setUnit(String unit) {
     this.unit = unit;
@@ -61,7 +77,10 @@ class StrainGauge extends SensorBase {
   }
 
   @override
-  void setSamplingRate(int samplingRate) => writeReg(data: '<sor$samplingRate>');
+  void setSamplingRate(int samplingRate) {
+    this.samplingRate = samplingRate;
+    writeReg(data: '<sor$samplingRate>');
+  }
 
   @override
   void start() {
@@ -76,5 +95,8 @@ class StrainGauge extends SensorBase {
 
   void setName(String name) => writeReg(data: '<sn$name>');
 
-  void setCalibrationValue(double value) => writeReg(data: '<cv$value>');
+  void setCalibrationValue(double value) {
+    calValue = value;
+    writeReg(data: '<cv$value>');
+  }
 }
