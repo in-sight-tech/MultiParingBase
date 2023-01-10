@@ -164,7 +164,7 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
               children: [
                 const Text('Unit : '),
                 DropdownButton<String>(
-                  value: widget.sensor.unit,
+                  value: widget.sensor.unit == 'null' ? 'v' : widget.sensor.unit,
                   alignment: AlignmentDirectional.centerEnd,
                   underline: Container(),
                   items: const [
