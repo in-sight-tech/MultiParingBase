@@ -47,12 +47,10 @@ class StrainGauge extends SensorBase {
   void calSignal(ByteData bytes) async {
     StrainGaugeSignal signal = StrainGaugeSignal();
 
-    if (isValiable(bytes) == false) return;
-
     startTime ??= bytes.getInt32(4, Endian.little);
     signal.time = bytes.getInt32(4, Endian.little) - startTime!;
 
-    signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3;
+    signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3 * calValue;
 
     onData?.call(this, signal);
   }

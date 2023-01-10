@@ -99,7 +99,6 @@ class StrainGaugeSettingDialog extends StatefulWidget {
 }
 
 class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
-  bool isWaiting = false;
   int? returnRateValue;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _calibrationController = TextEditingController();
@@ -156,7 +155,6 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
                     DropdownMenuItem(value: 200, alignment: AlignmentDirectional.centerEnd, child: Text('200 Hz')),
                   ],
                   onChanged: (value) {
-                    isWaiting = true;
                     returnRateValue = value;
 
                     widget.sensor.setSamplingRate(value!);
@@ -168,7 +166,6 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
             ),
             ElevatedButton(
               onPressed: () {
-                isWaiting = true;
                 widget.sensor.calibrate();
                 setState(() => {});
               },

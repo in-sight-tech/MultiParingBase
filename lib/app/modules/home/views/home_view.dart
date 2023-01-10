@@ -5,7 +5,6 @@ import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 import 'package:multiparingbase/app/widgets/analog_tile.dart';
-import 'package:multiparingbase/app/widgets/app_drawer.dart';
 import 'package:multiparingbase/app/widgets/bluetooth_discovery.dart';
 import 'package:multiparingbase/app/widgets/custom_floating_action_button.dart';
 import 'package:multiparingbase/app/widgets/imu_tile.dart';
@@ -39,7 +38,6 @@ class HomeView extends GetView<HomeController> {
           ),
         ],
       ),
-      drawer: const CustomAppDrawer(),
       body: GetBuilder<HomeController>(
         id: 'deviceList',
         builder: (_) => ListView.builder(
