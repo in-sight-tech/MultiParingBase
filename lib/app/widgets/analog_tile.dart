@@ -101,6 +101,8 @@ class AnalogSettingDialog extends StatefulWidget {
 class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _calibrationController = TextEditingController();
+  final TextEditingController _unitController = TextEditingController();
+
   int? returnRateValue;
   bool mode = false;
   String? unit;
@@ -109,10 +111,10 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
   void initState() {
     super.initState();
     returnRateValue = widget.sensor.samplingRate;
-    unit = widget.sensor.unit == 'null' ? 'v' : widget.sensor.unit;
     mode = widget.sensor.mode;
     _nameController.text = widget.sensor.device.name;
     _calibrationController.text = widget.sensor.calValue.toStringAsFixed(2);
+    _unitController.text = widget.sensor.unit;
   }
 
   @override
@@ -131,6 +133,7 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
               decoration: const InputDecoration(
                 labelText: 'DeviceName',
                 border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.black),
               ),
               keyboardType: TextInputType.text,
               onSubmitted: (String value) {
@@ -160,25 +163,17 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
                 const Text('10v'),
               ],
             ),
-            Row(
-              children: [
-                const Text('Unit : '),
-                DropdownButton<String>(
-                  value: widget.sensor.unit == 'null' ? 'v' : widget.sensor.unit,
-                  alignment: AlignmentDirectional.centerEnd,
-                  underline: Container(),
-                  items: const [
-                    DropdownMenuItem(value: 'v', alignment: AlignmentDirectional.centerEnd, child: Text('v')),
-                    DropdownMenuItem(value: 'mV', alignment: AlignmentDirectional.centerEnd, child: Text('mV')),
-                  ],
-                  onChanged: (value) {
-                    widget.sensor.setUnit(value!);
-                    setState(() {
-                      widget.sensor.unit = value;
-                    });
-                  },
-                ),
-              ],
+            TextField(
+              controller: _unitController,
+              decoration: const InputDecoration(
+                prefixText: 'Unit : ',
+                border: InputBorder.none,
+                prefixIconColor: Colors.black,
+              ),
+              onSubmitted: (String value) {
+                widget.sensor.unit = value;
+                widget.sensor.setUnit(value);
+              },
             ),
             Row(
               children: [
@@ -212,6 +207,7 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
               decoration: const InputDecoration(
                 prefixText: 'Calibration Value : ',
                 border: InputBorder.none,
+                prefixIconColor: Colors.black,
               ),
               keyboardType: TextInputType.number,
               onSubmitted: (String value) {

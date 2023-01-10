@@ -18,11 +18,11 @@ class StrainGauge extends SensorBase {
     required DiscoveredDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
-  }) {
-    super.device = device;
-    super.dispose = dispose;
-    super.onData = onData;
-
+  }) : super(
+          device: device,
+          dispose: dispose,
+          onData: onData,
+        ) {
     bufferLength = 10;
   }
 
