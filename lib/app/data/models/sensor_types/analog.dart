@@ -9,11 +9,10 @@ class Analog extends SensorBase {
     required DiscoveredDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
-  }) : super(
-          device: device,
-          dispose: dispose,
-          onData: onData,
-        ) {
+  }) {
+    super.device = device;
+    super.dispose = dispose;
+    super.onData = onData;
     bufferLength = 10;
   }
 
@@ -24,7 +23,7 @@ class Analog extends SensorBase {
     biasTime ??= bytes.getInt32(4, Endian.little);
     signal.time = bytes.getInt32(4, Endian.little) - biasTime!;
 
-    signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3;
+    signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3 * calValue;
 
     onData?.call(this, signal);
   }

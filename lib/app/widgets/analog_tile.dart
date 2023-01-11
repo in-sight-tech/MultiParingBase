@@ -41,6 +41,18 @@ class AnalogTile extends StatelessWidget {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              children: [
+                Text('Sampling Rate: ${sensor.samplingRate}Hz'),
+                const SizedBox(width: 20),
+                Text('Cal Value: ${sensor.calValue}'),
+                const SizedBox(width: 20),
+                Text('Mode : ${sensor.mode == true ? '10v' : '5v'}'),
+              ],
+            ),
+          ),
           Container(
             height: 150,
             padding: const EdgeInsets.all(10),

@@ -297,7 +297,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
 
   int? returnRateValue;
 
-  late ImuReturnContents returnContentsValue;
+  late ImuContents returnContentsValue;
 
   @override
   void initState() {
@@ -305,7 +305,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
 
     unitValue = widget.sensor.accelerationUnit;
     returnRateValue = widget.sensor.samplingRate;
-    returnContentsValue = widget.sensor.returnContents;
+    returnContentsValue = widget.sensor.contents;
   }
 
   @override
@@ -363,7 +363,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
 
                     showProgressDialog();
 
-                    await widget.sensor.setSamplingRate(value!);
+                    widget.sensor.setSamplingRate(value!);
 
                     if (mounted) Navigator.of(context).pop();
                   },
@@ -383,19 +383,19 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
                   onSelected: (value) async {
                     setState(() => returnContentsValue.acceleration = value);
                     showProgressDialog();
-                    await widget.sensor.setReturnContent(returnContentsValue);
+                    widget.sensor.setReturnContent(returnContentsValue);
 
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),
                 ChoiceChip(
                   label: const Text('Angular velocity'),
-                  selected: returnContentsValue.angularVelocity,
+                  selected: returnContentsValue.gyro,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => returnContentsValue.angularVelocity = value);
+                    setState(() => returnContentsValue.gyro = value);
                     showProgressDialog();
-                    await widget.sensor.setReturnContent(returnContentsValue);
+                    widget.sensor.setReturnContent(returnContentsValue);
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),
@@ -406,7 +406,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
                   onSelected: (value) async {
                     setState(() => returnContentsValue.angle = value);
                     showProgressDialog();
-                    await widget.sensor.setReturnContent(returnContentsValue);
+                    widget.sensor.setReturnContent(returnContentsValue);
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),
@@ -419,7 +419,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
                 CupertinoButton(
                     onPressed: () async {
                       showProgressDialog();
-                      await widget.sensor.calibrate();
+                      widget.sensor.calibrate();
                       if (mounted) Navigator.of(context).pop();
                     },
                     child: const Text('Acceleration')),

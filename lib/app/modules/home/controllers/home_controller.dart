@@ -168,8 +168,8 @@ class HomeController extends GetxController {
               id: device.hashCode,
               deviceName: device.device.name,
               type: SensorType.imu,
-              units: device.returnContents.toUnitList(device.accelerationUnit),
-              names: device.returnContents.toNameList(),
+              units: device.contents.units(device.accelerationUnit),
+              names: device.contents.names,
             ));
           }
           if (device is Analog) {
@@ -197,42 +197,24 @@ class HomeController extends GetxController {
     } else if (recordState == RecordStates.none) {
       recordStop();
 
-      await Get.bottomSheet(
-        Container(
-          width: 300,
-          height: 100,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              const Text('저장하시겠습니까?', style: TextStyle(fontSize: 25)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(onPressed: () => Get.back(result: false), child: const Text('취소')),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text('App에 저장'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      Get.back(result: true);
-                      Uint8List? bytes = await compute(Utils.toCSV, devices.length);
+      await Get.defaultDialog(
+        title: '계측 종료',
+        content: const Text('저장하시겠습니까?'),
+        textConfirm: 'CSV로 저장',
+        confirmTextColor: Colors.white,
+        onConfirm: () async {
+          Get.back(result: true);
+          Uint8List? bytes = await compute(Utils.toCSV, devices.length);
 
-                      if (bytes == null) return;
+          if (bytes == null) return;
 
-                      DateTime now = DateTime.now();
-                      String formattedData = DateFormat('yyyyMMddHHmmss').format(now);
-                      MimeType type = MimeType.CSV;
-                      await FileSaver.instance.saveAs('$formattedData.csv', bytes, 'csv', type);
-                    },
-                    child: const Text('Csv로 저장'),
-                  ),
-                ],
-              )
-            ],
-          ),
-        ),
+          DateTime now = DateTime.now();
+          String formattedData = DateFormat('yyyyMMddHHmmss').format(now);
+          MimeType type = MimeType.CSV;
+          await FileSaver.instance.saveAs('$formattedData.csv', bytes, 'csv', type);
+        },
+        onCancel: () => Get.back(result: false),
+        textCancel: '취소',
       );
     }
   }

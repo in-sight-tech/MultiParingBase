@@ -42,12 +42,6 @@ abstract class SensorBase {
   bool mode = false;
   int? biasTime;
 
-  SensorBase({
-    required DiscoveredDevice device,
-    Function(SensorBase)? dispose,
-    Function(SensorBase, SignalBase)? onData,
-  });
-
   Future<bool> connect() async {
     try {
       connection = flutterReactiveBle
