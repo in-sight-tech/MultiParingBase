@@ -6,6 +6,8 @@ import 'package:multiparingbase/app/data/collections/sensor_information.dart';
 import 'package:multiparingbase/app/data/collections/sensor_signal.dart';
 
 class Utils {
+  static String version = '1.0.0';
+
   static Future<Uint8List?> toCSV(int count) async {
     Isar isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
     List<SensorInformation> informations = isar.sensorInformations.where().findAllSync();

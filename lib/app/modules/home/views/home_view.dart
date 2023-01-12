@@ -37,11 +37,6 @@ class HomeView extends GetView<HomeController> {
                           alignmentDuration: const Duration(milliseconds: 600),
                           transitionDuration: const Duration(milliseconds: 300),
                           reverseTransitionDuration: const Duration(milliseconds: 50),
-                          // Here we use another animation from the animations package instead of the default one.
-                          transitionBuilder: (child, animation) => FadeScaleTransition(
-                            animation: animation,
-                            child: child,
-                          ),
                           // Configuring how the dialog looks.
                           defaultDecoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,

@@ -27,6 +27,14 @@ class _TypeSelectorState extends State<TypeSelector> {
       child: ListView(
         shrinkWrap: true,
         children: [
+          const Text(
+            ' 센서 타입 선택',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Divider(),
           Card(
             child: RadioListTile(
               value: SensorType.strainGauge,
@@ -173,9 +181,18 @@ class _DeviceSelectorState extends State<DeviceSelector> {
                   icon: const Icon(Icons.arrow_back),
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
-                Lottie.asset('assets/lotties/searching-for-bluetooth-devices.json', height: 50),
+                const Text(
+                  '센서 선택',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                if (isDiscovering) Lottie.asset('assets/lotties/searching-for-bluetooth-devices.json', height: 50),
               ],
             ),
+            const Divider(),
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 300),
               child: ListView.builder(

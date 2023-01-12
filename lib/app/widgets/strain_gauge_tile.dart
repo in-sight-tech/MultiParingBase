@@ -41,6 +41,16 @@ class StrainGaugeTile extends StatelessWidget {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              children: [
+                Text('Sampling Rate: ${sensor.samplingRate}Hz'),
+                const SizedBox(width: 20),
+                Text('Cal Value: ${sensor.calValue}'),
+              ],
+            ),
+          ),
           Container(
             height: 150,
             padding: const EdgeInsets.all(10),
@@ -102,13 +112,16 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
   int? returnRateValue;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _calibrationController = TextEditingController();
+  final TextEditingController _unitController = TextEditingController();
+  bool isCalibration = false;
 
   @override
   void initState() {
     super.initState();
     returnRateValue = widget.sensor.samplingRate;
     _nameController.text = widget.sensor.device.name;
-    _calibrationController.text = widget.sensor.calValue.toString();
+    _calibrationController.text = widget.sensor.calValue.toStringAsFixed(2);
+    _unitController.text = widget.sensor.unit;
   }
 
   @override
@@ -117,9 +130,9 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 300,
-        height: 400,
         padding: const EdgeInsets.all(20),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
@@ -136,6 +149,18 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
             const Text(
               'Reboot required when renaming sensor',
               style: TextStyle(fontSize: 10, color: Colors.red),
+            ),
+            TextField(
+              controller: _unitController,
+              decoration: const InputDecoration(
+                prefixText: 'Unit : ',
+                border: InputBorder.none,
+                prefixIconColor: Colors.black,
+              ),
+              onSubmitted: (String value) {
+                widget.sensor.unit = value;
+                widget.sensor.setUnit(value);
+              },
             ),
             Row(
               children: [
@@ -164,20 +189,27 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
                 ),
               ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                widget.sensor.calibrate();
-                setState(() => {});
-              },
-              child: const Text('Calibrate'),
-            ),
+            isCalibration
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: () {
+                      widget.sensor.calibrate();
+                      isCalibration = true;
+                      Future.delayed(const Duration(seconds: 3), () => setState(() => isCalibration = false));
+                      setState(() => {});
+                    },
+                    child: const Text('Calibrate'),
+                  ),
             TextField(
               controller: _calibrationController,
               decoration: const InputDecoration(
-                labelText: 'Calibration Value',
+                prefixText: 'Calibration Value : ',
+                border: InputBorder.none,
+                prefixIconColor: Colors.black,
               ),
               keyboardType: TextInputType.number,
               onSubmitted: (String value) {
+                widget.sensor.calValue = double.parse(value);
                 widget.sensor.setCalibrationValue(double.parse(value));
               },
             ),
