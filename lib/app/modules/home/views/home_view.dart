@@ -1,5 +1,6 @@
+import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/material.dart';
-
+import 'package:animations/animations.dart';
 import 'package:get/get.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:multiparingbase/app/data/models/models.dart';
@@ -26,10 +27,29 @@ class HomeView extends GetView<HomeController> {
             id: 'bluetoothIcon',
             builder: (_) => IconButton(
               onPressed: controller.recordState == RecordStates.none
-                  ? () => Get.dialog(
-                        Dialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          child: BluetoothDiscovery(onTap: _.connectBluetoothDevice),
+                  ? () => showModal(
+                        context: context,
+                        builder: (context) => FluidDialog(
+                          // Use a custom curve for the alignment transition
+                          alignmentCurve: Curves.easeInOutCubicEmphasized,
+                          // Setting custom durations for all animations.
+                          sizeDuration: const Duration(milliseconds: 300),
+                          alignmentDuration: const Duration(milliseconds: 600),
+                          transitionDuration: const Duration(milliseconds: 300),
+                          reverseTransitionDuration: const Duration(milliseconds: 50),
+                          // Here we use another animation from the animations package instead of the default one.
+                          transitionBuilder: (child, animation) => FadeScaleTransition(
+                            animation: animation,
+                            child: child,
+                          ),
+                          // Configuring how the dialog looks.
+                          defaultDecoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          rootPage: FluidDialogPage(
+                            builder: (context) => TypeSelector(onTap: controller.connectBluetoothDevice),
+                          ),
                         ),
                       )
                   : null,

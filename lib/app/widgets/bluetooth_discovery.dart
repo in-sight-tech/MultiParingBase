@@ -1,35 +1,120 @@
 import 'dart:async';
 
+import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:lottie/lottie.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class BluetoothDiscovery extends StatefulWidget {
+class TypeSelector extends StatefulWidget {
   final Function(SensorType, DiscoveredDevice)? onTap;
 
-  const BluetoothDiscovery({
+  const TypeSelector({super.key, this.onTap});
+
+  @override
+  State<TypeSelector> createState() => _TypeSelectorState();
+}
+
+class _TypeSelectorState extends State<TypeSelector> {
+  SensorType sensorTypeValue = SensorType.values[0];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 350,
+      padding: const EdgeInsets.all(16.0),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          Card(
+            child: RadioListTile(
+              value: SensorType.strainGauge,
+              groupValue: sensorTypeValue,
+              title: const Text('Strain Gauge'),
+              onChanged: (value) => setState(() {
+                sensorTypeValue = value!;
+              }),
+            ),
+          ),
+          Card(
+            child: RadioListTile(
+              value: SensorType.imu,
+              groupValue: sensorTypeValue,
+              title: const Text('IMU'),
+              onChanged: (value) => setState(() {
+                sensorTypeValue = value!;
+              }),
+            ),
+          ),
+          Card(
+            child: RadioListTile(
+              value: SensorType.analog,
+              groupValue: sensorTypeValue,
+              title: const Text('Analog'),
+              onChanged: (value) => setState(() {
+                sensorTypeValue = value!;
+              }),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () {},
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                child: const Text('Next'),
+                onPressed: () => DialogNavigator.of(context).push(
+                  FluidDialogPage(
+                    // This dialog is shown in the center of the screen.
+                    alignment: Alignment.center,
+                    // Using a custom decoration for this dialog.
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                    builder: (context) => DeviceSelector(
+                      sensorTypeValue: sensorTypeValue,
+                      onTap: widget.onTap,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DeviceSelector extends StatefulWidget {
+  final SensorType sensorTypeValue;
+  final Function(SensorType, DiscoveredDevice)? onTap;
+
+  const DeviceSelector({
     super.key,
     this.onTap,
+    required this.sensorTypeValue,
   });
 
   @override
-  State<BluetoothDiscovery> createState() => _BluetoothDiscoveryState();
+  State<DeviceSelector> createState() => _DeviceSelectorState();
 }
 
-class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
+class _DeviceSelectorState extends State<DeviceSelector> {
   final flutterReactiveBle = FlutterReactiveBle();
-  int stepperIndex = 0;
-  SensorType? sensorTypeValue = SensorType.values[0];
-  DiscoveredDevice? sensorValue;
-
   bool isDiscovering = true;
   final List<DiscoveredDevice> results = <DiscoveredDevice>[];
   late StreamSubscription<DiscoveredDevice> streamSubscription;
+  DiscoveredDevice? sensorValue;
 
   @override
   void initState() {
-    init();
+    Future.delayed(const Duration(milliseconds: 500), init);
 
     super.initState();
   }
@@ -74,117 +159,51 @@ class _BluetoothDiscoveryState extends State<BluetoothDiscovery> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 350,
-      height: 500,
-      child: Stepper(
-        currentStep: stepperIndex,
-        onStepCancel: () {
-          if (stepperIndex > 0) {
-            setState(() {
-              stepperIndex -= 1;
-            });
-          }
-        },
-        onStepContinue: () {
-          if (stepperIndex <= 0) {
-            setState(() {
-              stepperIndex += 1;
-            });
-          } else {
-            if (sensorValue == null) return;
-            widget.onTap?.call(sensorTypeValue!, sensorValue!);
-          }
-        },
-        controlsBuilder: (BuildContext context, ControlsDetails details) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: details.onStepContinue,
-                child: Text(stepperIndex == 1 ? 'Connect' : 'Continue'),
-              ),
-              TextButton(
-                onPressed: details.onStepCancel,
-                child: const Text('Back'),
-              ),
-            ],
-          );
-        },
-        steps: [
-          Step(
-            title: const Text('Select Sensor Type'),
-            isActive: stepperIndex == 0,
-            content: Container(
-              alignment: Alignment.center,
-              child: ListView(
+      width: 400,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  onPressed: () => DialogNavigator.of(context).pop(),
+                  icon: const Icon(Icons.arrow_back),
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                Lottie.asset('assets/lotties/searching-for-bluetooth-devices.json', height: 50),
+              ],
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 300),
+              child: ListView.builder(
+                itemBuilder: (context, index) => Card(
+                  child: RadioListTile(
+                    value: results[index],
+                    groupValue: sensorValue,
+                    title: Text(results[index].name),
+                    onChanged: (value) => setState(() {
+                      sensorValue = value;
+                    }),
+                  ),
+                ),
+                itemCount: results.length,
                 shrinkWrap: true,
-                children: [
-                  Card(
-                    child: RadioListTile(
-                      value: SensorType.strainGauge,
-                      groupValue: sensorTypeValue,
-                      title: const Text('Strain Gauge'),
-                      onChanged: (value) => setState(() {
-                        sensorTypeValue = value;
-                      }),
-                    ),
-                  ),
-                  Card(
-                    child: RadioListTile(
-                      value: SensorType.imu,
-                      groupValue: sensorTypeValue,
-                      title: const Text('IMU'),
-                      onChanged: (value) => setState(() {
-                        sensorTypeValue = value;
-                      }),
-                    ),
-                  ),
-                  Card(
-                    child: RadioListTile(
-                      value: SensorType.analog,
-                      groupValue: sensorTypeValue,
-                      title: const Text('Analog'),
-                      onChanged: (value) => setState(() {
-                        sensorTypeValue = value;
-                      }),
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
-          Step(
-            title: const Text('Select Sensor'),
-            isActive: stepperIndex == 1,
-            content: SizedBox(
-              height: 280,
-              child: ListView(
-                children: [
-                  ...results.map((r) => Card(
-                        child: RadioListTile(
-                          value: r,
-                          groupValue: sensorValue,
-                          title: Text(r.name),
-                          onChanged: (value) => setState(() {
-                            sensorValue = value;
-                          }),
-                        ),
-                      )),
-                  if (isDiscovering)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 16.0),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                  if (!isDiscovering)
-                    TextButton(
-                      onPressed: bluetoothDiscovery,
-                      child: const Text('다시 검색'),
-                    )
-                ],
-              ),
-            ),
-          ),
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                ElevatedButton(
+                  onPressed: sensorValue == null ? null : () => widget.onTap?.call(widget.sensorTypeValue, sensorValue!),
+                  child: const Text('Connect'),
+                ),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
