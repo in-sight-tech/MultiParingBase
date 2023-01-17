@@ -4,8 +4,6 @@ import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class Imu extends SensorBase {
-  String accelerationUnit = 'm/s²';
-
   ImuContents contents = ImuContents();
 
   Imu({
@@ -16,7 +14,7 @@ class Imu extends SensorBase {
     super.device = device;
     super.dispose = dispose;
     super.onData = onData;
-    bufferLength = 12;
+    bufferLength = 14;
   }
 
   @override
@@ -31,7 +29,7 @@ class Imu extends SensorBase {
       signal.ay = (bytes.getInt16(8, Endian.little) / 32768) * 16;
       signal.az = (bytes.getInt16(10, Endian.little) / 32768) * 16;
 
-      if (accelerationUnit == 'm/s²') {
+      if (unit == 'm/s²') {
         signal.ax = signal.ax! * 9.80665;
         signal.ay = signal.ay! * 9.80665;
         signal.az = signal.az! * 9.80665;
@@ -53,9 +51,7 @@ class Imu extends SensorBase {
     onData?.call(this, signal);
   }
 
-  void setReturnContent(ImuContents rc) {}
-
-  void setBandwidth(int bandwidth) {}
+  void setReturnContent(ImuContents rc) => writeReg(data: '<src${rc.config}>');
 }
 
 class ImuContents {

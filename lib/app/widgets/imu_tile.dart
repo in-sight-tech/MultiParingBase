@@ -125,7 +125,7 @@ class _ImuTileState extends State<ImuTile> {
   initState() {
     super.initState();
 
-    unit = widget.sensor.accelerationUnit;
+    unit = widget.sensor.unit;
   }
 
   @override
@@ -133,7 +133,7 @@ class _ImuTileState extends State<ImuTile> {
     super.didUpdateWidget(oldWidget);
 
     if (value == 0) {
-      unit = widget.sensor.accelerationUnit;
+      unit = widget.sensor.unit;
     } else if (value == 1) {
       unit = '°/s';
     } else if (value == 2) {
@@ -303,7 +303,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
   void initState() {
     super.initState();
 
-    unitValue = widget.sensor.accelerationUnit;
+    unitValue = widget.sensor.unit == 'm/s^2' ? 'm/s²' : 'g';
     returnRateValue = widget.sensor.samplingRate;
     returnContentsValue = widget.sensor.contents;
   }
@@ -335,7 +335,8 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
                   groupValue: unitValue,
                   onValueChanged: (String? newValue) {
                     setState(() => unitValue = newValue);
-                    widget.sensor.setUnit(unitValue!);
+                    widget.sensor.unit = newValue!;
+                    widget.sensor.setUnit(unitValue == 'g' ? 'g' : 'm/s^2');
                   },
                 )
               ],

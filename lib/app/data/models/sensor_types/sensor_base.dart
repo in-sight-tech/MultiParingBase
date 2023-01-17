@@ -99,7 +99,7 @@ abstract class SensorBase {
       checksum = (checksum + packets.getUint8(i)) & 0xffff;
     }
 
-    return checksum == packets.getUint16(8, Endian.little);
+    return checksum == packets.getUint16(bufferLength - 2, Endian.little);
   }
 
   void listenState(ConnectionStateUpdate state) async {

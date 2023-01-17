@@ -168,7 +168,7 @@ class HomeController extends GetxController {
               id: device.hashCode,
               deviceName: device.device.name,
               type: SensorType.imu,
-              units: device.contents.units(device.accelerationUnit),
+              units: device.contents.units(device.unit),
               names: device.contents.names,
             ));
           }
