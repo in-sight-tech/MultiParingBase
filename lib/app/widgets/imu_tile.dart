@@ -293,6 +293,7 @@ class ImuSettingDialog extends StatefulWidget {
 }
 
 class _ImuSettingDialogState extends State<ImuSettingDialog> {
+  final _nameController = TextEditingController();
   String? unitValue;
 
   int? returnRateValue;
@@ -303,6 +304,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
   void initState() {
     super.initState();
 
+    _nameController.text = widget.sensor.device.name;
     unitValue = widget.sensor.unit == 'm/s^2' ? 'm/s²' : 'g';
     returnRateValue = widget.sensor.samplingRate;
     returnContentsValue = widget.sensor.contents;
@@ -314,16 +316,26 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: 300,
-        height: 400,
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          shrinkWrap: true,
           children: [
-            Text(
-              widget.sensor.device.name,
-              style: const TextStyle(fontSize: 20),
+            TextField(
+              controller: _nameController,
+              maxLength: 16,
+              decoration: const InputDecoration(
+                labelText: 'DeviceName',
+                border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.black),
+                helperText: 'Reboot required when renaming sensor',
+                helperStyle: TextStyle(fontSize: 10, color: Colors.red),
+              ),
+              keyboardType: TextInputType.text,
+              onSubmitted: (String value) {
+                widget.sensor.setName(value);
+              },
             ),
-            const Divider(),
+            const SizedBox(height: 20),
             Row(
               children: [
                 const Text('Unit : '),
@@ -364,7 +376,8 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
 
                     showProgressDialog();
 
-                    widget.sensor.setSamplingRate(value!);
+                    widget.sensor.samplingRate = value!;
+                    widget.sensor.setSamplingRate(value);
 
                     if (mounted) Navigator.of(context).pop();
                   },
@@ -378,36 +391,45 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
               runSpacing: 5,
               children: [
                 ChoiceChip(
-                  label: const Text('Accelertaion'),
-                  selected: returnContentsValue.acceleration,
+                  label: Text(
+                    'Accelertaion',
+                    style: TextStyle(color: widget.sensor.contents.acceleration ? Colors.grey[200] : Colors.black),
+                  ),
+                  selected: widget.sensor.contents.acceleration,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => returnContentsValue.acceleration = value);
+                    setState(() => widget.sensor.contents.acceleration = value);
                     showProgressDialog();
-                    widget.sensor.setReturnContent(returnContentsValue);
+                    widget.sensor.setReturnContent(widget.sensor.contents);
 
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),
                 ChoiceChip(
-                  label: const Text('Angular velocity'),
-                  selected: returnContentsValue.gyro,
+                  label: Text(
+                    'Angular velocity',
+                    style: TextStyle(color: widget.sensor.contents.gyro ? Colors.grey[200] : Colors.black),
+                  ),
+                  selected: widget.sensor.contents.gyro,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => returnContentsValue.gyro = value);
+                    setState(() => widget.sensor.contents.gyro = value);
                     showProgressDialog();
-                    widget.sensor.setReturnContent(returnContentsValue);
+                    widget.sensor.setReturnContent(widget.sensor.contents);
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),
                 ChoiceChip(
-                  label: const Text('Angle'),
-                  selected: returnContentsValue.angle,
+                  label: Text(
+                    'Angle',
+                    style: TextStyle(color: widget.sensor.contents.angle ? Colors.grey[200] : Colors.black),
+                  ),
+                  selected: widget.sensor.contents.angle,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => returnContentsValue.angle = value);
+                    setState(() => widget.sensor.contents.angle = value);
                     showProgressDialog();
-                    widget.sensor.setReturnContent(returnContentsValue);
+                    widget.sensor.setReturnContent(widget.sensor.contents);
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),

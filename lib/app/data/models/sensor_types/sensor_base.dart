@@ -16,6 +16,7 @@ abstract class SensorBase {
   static const CHARACTERISTIC_UUID_CALVALUE = "6E400005-B5A3-F393-E0A9-E50E24DCCA9E";
   static const CHARACTERISTIC_UUID_UNIT = "6E400006-B5A3-F393-E0A9-E50E24DCCA9E";
   static const CHARACTERISTIC_UUID_MODE = "6E400007-B5A3-F393-E0A9-E50E24DCCA9E";
+  static const CHARACTERISTIC_UUID_RSW = "6E400008-B5A3-F393-E0A9-E50E24DCCA9E";
 
   late DiscoveredDevice device;
   final FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
@@ -25,6 +26,7 @@ abstract class SensorBase {
   QualifiedCharacteristic? unitCharacteristic;
   QualifiedCharacteristic? modeCharacteristic;
   QualifiedCharacteristic? notifyCharacteristic;
+  QualifiedCharacteristic? rswCharacteristic;
   late StreamSubscription<ConnectionStateUpdate> connection;
 
   Queue<int> buffer = Queue<int>();
@@ -40,6 +42,7 @@ abstract class SensorBase {
   double calValue = 1.0;
   bool mode = false;
   int? biasTime;
+  int? rsw;
 
   Future<bool> connect() async {
     try {
@@ -105,6 +108,7 @@ abstract class SensorBase {
   void listenState(ConnectionStateUpdate state) async {
     switch (state.connectionState) {
       case DeviceConnectionState.disconnected:
+        connection.cancel();
         logger.i('${device.name} disconnected');
         dispose?.call(this);
         break;
@@ -154,58 +158,68 @@ abstract class SensorBase {
                   characteristicId: characteristic.characteristicId,
                   deviceId: device.id,
                 );
+              } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_RSW)) {
+                rswCharacteristic = QualifiedCharacteristic(
+                  serviceId: service.serviceId,
+                  characteristicId: characteristic.characteristicId,
+                  deviceId: device.id,
+                );
               }
             }
           }
 
-          if (sampingRateCharacteristic != null) {
-            flutterReactiveBle.readCharacteristic(sampingRateCharacteristic!).then((value) {
-              samplingRate = Uint8List.fromList(value.toList()).buffer.asByteData().getUint32(0, Endian.little);
-            });
-          }
-
-          if (calValueCharacteristic != null) {
-            flutterReactiveBle.readCharacteristic(calValueCharacteristic!).then((value) {
-              calValue = Uint8List.fromList(value.toList()).buffer.asByteData().getFloat64(0, Endian.little);
-            });
-          }
-
-          if (unitCharacteristic != null) {
-            flutterReactiveBle.readCharacteristic(unitCharacteristic!).then((value) {
-              unit = String.fromCharCodes(value);
-            });
-          }
-
-          if (modeCharacteristic != null) {
-            flutterReactiveBle.readCharacteristic(modeCharacteristic!).then((value) {
-              mode = String.fromCharCodes(value) == '10v' ? true : false;
-            });
-          }
-
-          if (notifyCharacteristic != null) {
-            flutterReactiveBle.subscribeToCharacteristic(notifyCharacteristic!).listen((event) {
-              for (int byte in event) {
-                while (buffer.length >= bufferLength) {
-                  if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
-                    if (isValiable(ByteData.view(Uint8List.fromList(buffer.toList()).buffer))) {
-                      calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
-                      buffer.clear();
-                    } else {
-                      buffer.removeFirst();
-                    }
-                  } else {
-                    buffer.removeFirst();
-                  }
-                }
-                buffer.add(byte);
-              }
-            });
-          }
+          connectCharacteristic();
         });
         break;
       case DeviceConnectionState.disconnecting:
         logger.i('Disconnecting from ${device.name}...');
         break;
+    }
+  }
+
+  connectCharacteristic() {
+    if (sampingRateCharacteristic != null) {
+      flutterReactiveBle.readCharacteristic(sampingRateCharacteristic!).then((value) {
+        samplingRate = Uint8List.fromList(value.toList()).buffer.asByteData().getUint32(0, Endian.little);
+      });
+    }
+
+    if (calValueCharacteristic != null) {
+      flutterReactiveBle.readCharacteristic(calValueCharacteristic!).then((value) {
+        calValue = Uint8List.fromList(value.toList()).buffer.asByteData().getFloat64(0, Endian.little);
+      });
+    }
+
+    if (unitCharacteristic != null) {
+      flutterReactiveBle.readCharacteristic(unitCharacteristic!).then((value) {
+        unit = String.fromCharCodes(value);
+      });
+    }
+
+    if (modeCharacteristic != null) {
+      flutterReactiveBle.readCharacteristic(modeCharacteristic!).then((value) {
+        mode = String.fromCharCodes(value) == '10v' ? true : false;
+      });
+    }
+
+    if (notifyCharacteristic != null) {
+      flutterReactiveBle.subscribeToCharacteristic(notifyCharacteristic!).listen((event) {
+        for (int byte in event) {
+          while (buffer.length >= bufferLength) {
+            if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
+              if (isValiable(ByteData.view(Uint8List.fromList(buffer.toList()).buffer))) {
+                calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
+                buffer.clear();
+              } else {
+                buffer.removeFirst();
+              }
+            } else {
+              buffer.removeFirst();
+            }
+          }
+          buffer.add(byte);
+        }
+      });
     }
   }
 }

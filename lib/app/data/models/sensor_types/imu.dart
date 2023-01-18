@@ -4,7 +4,7 @@ import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class Imu extends SensorBase {
-  ImuContents contents = ImuContents();
+  late ImuContents contents;
 
   Imu({
     required DiscoveredDevice device,
@@ -14,50 +14,78 @@ class Imu extends SensorBase {
     super.device = device;
     super.dispose = dispose;
     super.onData = onData;
-    bufferLength = 14;
+  }
+
+  @override
+  connectCharacteristic() {
+    if (rswCharacteristic != null) {
+      flutterReactiveBle.readCharacteristic(rswCharacteristic!).then((value) {
+        rsw = Uint8List.fromList(value.toList()).buffer.asByteData().getInt32(0, Endian.little);
+
+        contents = ImuContents(rsw ?? 3);
+        bufferLength = 8 + contents.getNumberOfActiveContent * 6;
+      });
+    }
+
+    super.connectCharacteristic();
   }
 
   @override
   void calSignal(ByteData bytes) async {
     ImuSignal signal = ImuSignal();
+    int index = 6;
 
     biasTime ??= bytes.getInt32(2, Endian.little);
     signal.time = bytes.getInt32(2, Endian.little);
 
     if (contents.acceleration) {
-      signal.ax = (bytes.getInt16(6, Endian.little) / 32768) * 16;
-      signal.ay = (bytes.getInt16(8, Endian.little) / 32768) * 16;
-      signal.az = (bytes.getInt16(10, Endian.little) / 32768) * 16;
+      signal.ax = (bytes.getInt16(index, Endian.little) / 32768) * 16;
+      signal.ay = (bytes.getInt16(index + 2, Endian.little) / 32768) * 16;
+      signal.az = (bytes.getInt16(index + 4, Endian.little) / 32768) * 16;
 
       if (unit == 'm/s²') {
         signal.ax = signal.ax! * 9.80665;
         signal.ay = signal.ay! * 9.80665;
         signal.az = signal.az! * 9.80665;
       }
+
+      index += 6;
     }
 
     if (contents.gyro) {
-      signal.wx = (bytes.getInt16(2, Endian.little) / 32768) * 2000;
-      signal.wy = (bytes.getInt16(4, Endian.little) / 32768) * 2000;
-      signal.wz = (bytes.getInt16(6, Endian.little) / 32768) * 2000;
+      signal.wx = (bytes.getInt16(index, Endian.little) / 32768) * 2000;
+      signal.wy = (bytes.getInt16(index + 2, Endian.little) / 32768) * 2000;
+      signal.wz = (bytes.getInt16(index + 4, Endian.little) / 32768) * 2000;
+
+      index += 6;
     }
 
     if (contents.angle) {
-      signal.roll = (bytes.getInt16(2, Endian.little) / 32768) * 180;
-      signal.pitch = (bytes.getInt16(4, Endian.little) / 32768) * 180;
-      signal.yaw = (bytes.getInt16(6, Endian.little) / 32768) * 180;
+      signal.roll = (bytes.getInt16(index, Endian.little) / 32768) * 180;
+      signal.pitch = (bytes.getInt16(index + 2, Endian.little) / 32768) * 180;
+      signal.yaw = (bytes.getInt16(index + 4, Endian.little) / 32768) * 180;
     }
 
     onData?.call(this, signal);
   }
 
-  void setReturnContent(ImuContents rc) => writeReg(data: '<src${rc.config}>');
+  void setReturnContent(ImuContents rc) {
+    writeReg(data: '<src${rc.config}>');
+
+    bufferLength = 8 + rc.getNumberOfActiveContent * 6;
+  }
 }
 
 class ImuContents {
   bool acceleration = true;
   bool gyro = false;
   bool angle = false;
+
+  ImuContents(int rsw) {
+    acceleration = (rsw & 0x02) == 0x02;
+    gyro = (rsw & 0x04) == 0x04;
+    angle = (rsw & 0x08) == 0x08;
+  }
 
   get config {
     int rsw = 0x01;
@@ -92,5 +120,15 @@ class ImuContents {
     if (angle) list.addAll(['roll', 'pitch', 'yaw']);
 
     return list;
+  }
+
+  int get getNumberOfActiveContent {
+    int count = 0;
+
+    if (acceleration) count++;
+    if (gyro) count++;
+    if (angle) count++;
+
+    return count;
   }
 }
