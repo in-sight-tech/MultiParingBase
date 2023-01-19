@@ -168,8 +168,8 @@ class HomeController extends GetxController {
               id: device.hashCode,
               deviceName: device.device.name,
               type: SensorType.imu,
-              units: device.contents.units(device.unit),
-              names: device.contents.names,
+              units: device.contents?.units(device.unit) ?? [],
+              names: device.contents?.names,
             ));
           }
           if (device is Analog) {

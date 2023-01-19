@@ -142,19 +142,18 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
           children: [
             TextField(
               controller: _nameController,
+              maxLength: 16,
               decoration: const InputDecoration(
                 labelText: 'DeviceName',
                 border: OutlineInputBorder(),
                 labelStyle: TextStyle(color: Colors.black),
+                helperText: 'Reboot required when renaming sensor',
+                helperStyle: TextStyle(fontSize: 10, color: Colors.red),
               ),
               keyboardType: TextInputType.text,
               onSubmitted: (String value) {
                 widget.sensor.setName(value);
               },
-            ),
-            const Text(
-              'Reboot required when renaming sensor',
-              style: TextStyle(fontSize: 10, color: Colors.red),
             ),
             Row(
               children: [

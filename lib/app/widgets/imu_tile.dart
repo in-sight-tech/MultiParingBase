@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -169,14 +171,23 @@ class _ImuTileState extends State<ImuTile> {
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Row(
+              children: [
+                Text('Sampling Rate: ${widget.sensor.samplingRate}Hz'),
+              ],
+            ),
+          ),
           CupertinoSlidingSegmentedControl(
-            children: const {
-              0: Text('Acceleration'),
-              1: Text('Angular velocity'),
-              2: Text('Angle'),
+            children: {
+              0: Text('Acceleration', style: TextStyle(color: widget.sensor.contents?.acceleration ?? false ? Colors.black : Colors.grey)),
+              1: Text('Angular velocity', style: TextStyle(color: widget.sensor.contents?.gyro ?? false ? Colors.black : Colors.grey)),
+              2: Text('Angle', style: TextStyle(color: widget.sensor.contents?.angle ?? false ? Colors.black : Colors.grey)),
             },
             groupValue: value,
             onValueChanged: (int? newValue) {
+              if (widget.sensor.contents?.config & pow(2, newValue! + 1) == 0) return;
               setState(() => value = newValue);
             },
           ),
@@ -307,7 +318,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
     _nameController.text = widget.sensor.device.name;
     unitValue = widget.sensor.unit == 'm/s^2' ? 'm/s²' : 'g';
     returnRateValue = widget.sensor.samplingRate;
-    returnContentsValue = widget.sensor.contents;
+    returnContentsValue = widget.sensor.contents ?? ImuContents(3);
   }
 
   @override
@@ -393,14 +404,14 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
                 ChoiceChip(
                   label: Text(
                     'Accelertaion',
-                    style: TextStyle(color: widget.sensor.contents.acceleration ? Colors.grey[200] : Colors.black),
+                    style: TextStyle(color: widget.sensor.contents?.acceleration ?? false ? Colors.grey[200] : Colors.black),
                   ),
-                  selected: widget.sensor.contents.acceleration,
+                  selected: widget.sensor.contents!.acceleration,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => widget.sensor.contents.acceleration = value);
+                    setState(() => widget.sensor.contents!.acceleration = value);
                     showProgressDialog();
-                    widget.sensor.setReturnContent(widget.sensor.contents);
+                    widget.sensor.setReturnContent(widget.sensor.contents!);
 
                     if (mounted) Navigator.of(context).pop();
                   },
@@ -408,28 +419,28 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
                 ChoiceChip(
                   label: Text(
                     'Angular velocity',
-                    style: TextStyle(color: widget.sensor.contents.gyro ? Colors.grey[200] : Colors.black),
+                    style: TextStyle(color: widget.sensor.contents!.gyro ? Colors.grey[200] : Colors.black),
                   ),
-                  selected: widget.sensor.contents.gyro,
+                  selected: widget.sensor.contents!.gyro,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => widget.sensor.contents.gyro = value);
+                    setState(() => widget.sensor.contents!.gyro = value);
                     showProgressDialog();
-                    widget.sensor.setReturnContent(widget.sensor.contents);
+                    widget.sensor.setReturnContent(widget.sensor.contents!);
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),
                 ChoiceChip(
                   label: Text(
                     'Angle',
-                    style: TextStyle(color: widget.sensor.contents.angle ? Colors.grey[200] : Colors.black),
+                    style: TextStyle(color: widget.sensor.contents!.angle ? Colors.grey[200] : Colors.black),
                   ),
-                  selected: widget.sensor.contents.angle,
+                  selected: widget.sensor.contents!.angle,
                   selectedColor: Colors.lightBlue,
                   onSelected: (value) async {
-                    setState(() => widget.sensor.contents.angle = value);
+                    setState(() => widget.sensor.contents!.angle = value);
                     showProgressDialog();
-                    widget.sensor.setReturnContent(widget.sensor.contents);
+                    widget.sensor.setReturnContent(widget.sensor.contents!);
                     if (mounted) Navigator.of(context).pop();
                   },
                 ),

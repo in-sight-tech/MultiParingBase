@@ -4,7 +4,7 @@ import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class Imu extends SensorBase {
-  late ImuContents contents;
+  ImuContents? contents;
 
   Imu({
     required DiscoveredDevice device,
@@ -23,7 +23,7 @@ class Imu extends SensorBase {
         rsw = Uint8List.fromList(value.toList()).buffer.asByteData().getInt32(0, Endian.little);
 
         contents = ImuContents(rsw ?? 3);
-        bufferLength = 8 + contents.getNumberOfActiveContent * 6;
+        bufferLength = 8 + contents!.getNumberOfActiveContent * 6;
       });
     }
 
@@ -38,7 +38,7 @@ class Imu extends SensorBase {
     biasTime ??= bytes.getInt32(2, Endian.little);
     signal.time = bytes.getInt32(2, Endian.little);
 
-    if (contents.acceleration) {
+    if (contents?.acceleration ?? false) {
       signal.ax = (bytes.getInt16(index, Endian.little) / 32768) * 16;
       signal.ay = (bytes.getInt16(index + 2, Endian.little) / 32768) * 16;
       signal.az = (bytes.getInt16(index + 4, Endian.little) / 32768) * 16;
@@ -52,7 +52,7 @@ class Imu extends SensorBase {
       index += 6;
     }
 
-    if (contents.gyro) {
+    if (contents?.gyro ?? false) {
       signal.wx = (bytes.getInt16(index, Endian.little) / 32768) * 2000;
       signal.wy = (bytes.getInt16(index + 2, Endian.little) / 32768) * 2000;
       signal.wz = (bytes.getInt16(index + 4, Endian.little) / 32768) * 2000;
@@ -60,7 +60,7 @@ class Imu extends SensorBase {
       index += 6;
     }
 
-    if (contents.angle) {
+    if (contents?.angle ?? false) {
       signal.roll = (bytes.getInt16(index, Endian.little) / 32768) * 180;
       signal.pitch = (bytes.getInt16(index + 2, Endian.little) / 32768) * 180;
       signal.yaw = (bytes.getInt16(index + 4, Endian.little) / 32768) * 180;
