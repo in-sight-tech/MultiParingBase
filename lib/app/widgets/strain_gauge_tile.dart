@@ -113,6 +113,10 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _calibrationController = TextEditingController();
   final TextEditingController _unitController = TextEditingController();
+  final TextEditingController _displacementController1 = TextEditingController();
+  final TextEditingController _displacementController2 = TextEditingController();
+  final TextEditingController _inputSignalController1 = TextEditingController();
+  final TextEditingController _inputSignalController2 = TextEditingController();
   bool isCalibration = false;
 
   @override
@@ -131,9 +135,8 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
       child: Container(
         width: 300,
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ListView(
+          shrinkWrap: true,
           children: [
             TextField(
               controller: _nameController,
@@ -213,28 +216,90 @@ class _StrainGaugeSettingDialogState extends State<StrainGaugeSettingDialog> {
                 widget.sensor.setCalibrationValue(double.parse(value));
               },
             ),
+            const Text('Calibration Table'),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _displacementController1,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Displacement',
+                      suffixText: widget.sensor.unit,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    ),
+                    textAlign: TextAlign.end,
+                    keyboardType: TextInputType.number,
+                    onSubmitted: (String value) {
+                      widget.sensor.calValue = double.parse(value);
+                      widget.sensor.setDisplacement1(double.parse(value));
+                    },
+                  ),
+                ),
+                const Text(' == '),
+                Expanded(
+                  child: TextField(
+                    controller: _inputSignalController1,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(gapPadding: 0),
+                      suffixText: 'volts',
+                      labelText: 'Input Signal',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    ),
+                    textAlign: TextAlign.end,
+                    keyboardType: TextInputType.number,
+                    onSubmitted: (String value) {
+                      widget.sensor.calValue = double.parse(value);
+                      widget.sensor.setImputSignal1(double.parse(value));
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _displacementController2,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: 'Displacement',
+                      suffixText: widget.sensor.unit,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    ),
+                    textAlign: TextAlign.end,
+                    keyboardType: TextInputType.number,
+                    onSubmitted: (String value) {
+                      widget.sensor.calValue = double.parse(value);
+                      widget.sensor.setDisplacement2(double.parse(value));
+                    },
+                  ),
+                ),
+                const Text(' == '),
+                Expanded(
+                  child: TextField(
+                    controller: _inputSignalController2,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(gapPadding: 0),
+                      suffixText: 'volts',
+                      labelText: 'Input Signal',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
+                    ),
+                    textAlign: TextAlign.end,
+                    keyboardType: TextInputType.number,
+                    onSubmitted: (String value) {
+                      widget.sensor.calValue = double.parse(value);
+                      widget.sensor.setImputSignal2(double.parse(value));
+                    },
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  showProgressDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: const SizedBox(
-            width: 200,
-            height: 100,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        );
-      },
     );
   }
 }

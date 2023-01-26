@@ -13,7 +13,7 @@ class StrainGauge extends SensorBase {
     super.device = device;
     super.dispose = dispose;
     super.onData = onData;
-    bufferLength = 10;
+    bufferLength = 12;
   }
 
   @override
@@ -21,10 +21,26 @@ class StrainGauge extends SensorBase {
     StrainGaugeSignal signal = StrainGaugeSignal();
 
     biasTime ??= bytes.getInt32(4, Endian.little);
-    signal.time = bytes.getInt32(4, Endian.little) - biasTime!;
+    signal.time = bytes.getInt32(2, Endian.little) - biasTime!;
 
-    signal.value = bytes.getInt16(2, Endian.little).toDouble() / 4096.0 * 3.3 * calValue;
+    signal.value = bytes.getFloat32(6, Endian.little).toDouble();
 
     onData?.call(this, signal);
+  }
+
+  void setDisplacement1(double value) {
+    writeReg(data: '<dis1$value>');
+  }
+
+  void setDisplacement2(double value) {
+    writeReg(data: '<dis2$value>');
+  }
+
+  void setImputSignal1(double value) {
+    writeReg(data: '<is1$value>');
+  }
+
+  void setImputSignal2(double value) {
+    writeReg(data: '<is2$value>');
   }
 }

@@ -20,6 +20,7 @@ abstract class SensorBase {
 
   late DiscoveredDevice device;
   final FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
+  late StreamSubscription<ConnectionStateUpdate> connection;
   QualifiedCharacteristic? writeCharacteristic;
   QualifiedCharacteristic? sampingRateCharacteristic;
   QualifiedCharacteristic? calValueCharacteristic;
@@ -27,7 +28,6 @@ abstract class SensorBase {
   QualifiedCharacteristic? modeCharacteristic;
   QualifiedCharacteristic? notifyCharacteristic;
   QualifiedCharacteristic? rswCharacteristic;
-  late StreamSubscription<ConnectionStateUpdate> connection;
 
   Queue<int> buffer = Queue<int>();
   late int bufferLength;
@@ -122,49 +122,7 @@ abstract class SensorBase {
           for (DiscoveredService service in services) {
             if (service.serviceId != Uuid.parse("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")) continue;
             for (DiscoveredCharacteristic characteristic in service.characteristics) {
-              if (characteristic.isNotifiable) {
-                notifyCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              } else if (characteristic.isWritableWithResponse) {
-                writeCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_SAMPLINGRATE)) {
-                sampingRateCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_CALVALUE)) {
-                calValueCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_UNIT)) {
-                unitCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_MODE)) {
-                modeCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_RSW)) {
-                rswCharacteristic = QualifiedCharacteristic(
-                  serviceId: service.serviceId,
-                  characteristicId: characteristic.characteristicId,
-                  deviceId: device.id,
-                );
-              }
+              searchCharacteristic(service, characteristic);
             }
           }
 
@@ -177,6 +135,52 @@ abstract class SensorBase {
     }
   }
 
+  searchCharacteristic(DiscoveredService service, DiscoveredCharacteristic characteristic) {
+    if (characteristic.isNotifiable) {
+      notifyCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    } else if (characteristic.isWritableWithResponse) {
+      writeCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_SAMPLINGRATE)) {
+      sampingRateCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_CALVALUE)) {
+      calValueCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_UNIT)) {
+      unitCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_MODE)) {
+      modeCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_RSW)) {
+      rswCharacteristic = QualifiedCharacteristic(
+        serviceId: service.serviceId,
+        characteristicId: characteristic.characteristicId,
+        deviceId: device.id,
+      );
+    }
+  }
+
   connectCharacteristic() {
     if (sampingRateCharacteristic != null) {
       flutterReactiveBle.readCharacteristic(sampingRateCharacteristic!).then((value) {
@@ -186,7 +190,7 @@ abstract class SensorBase {
 
     if (calValueCharacteristic != null) {
       flutterReactiveBle.readCharacteristic(calValueCharacteristic!).then((value) {
-        calValue = Uint8List.fromList(value.toList()).buffer.asByteData().getFloat64(0, Endian.little);
+        calValue = Uint8List.fromList(value.toList()).buffer.asByteData().getFloat32(0, Endian.little);
       });
     }
 
