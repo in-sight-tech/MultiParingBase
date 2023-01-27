@@ -5,6 +5,7 @@ import 'package:multiparingbase/app/data/models/signals.dart';
 
 class Imu extends SensorBase {
   ImuContents? contents;
+  int? rsw;
 
   Imu({
     required BluetoothDevice device,
@@ -28,6 +29,11 @@ class Imu extends SensorBase {
     // }
 
     super.connectCharacteristic();
+  }
+
+  @override
+  void initConfig(json) {
+    // TODO: implement initConfig
   }
 
   @override

@@ -129,6 +129,11 @@ class _AnalogSettingDialogState extends State<AnalogSettingDialog> {
     _nameController.text = widget.sensor.device.name;
     _calibrationController.text = widget.sensor.calValue.toStringAsFixed(2);
     _unitController.text = widget.sensor.unit;
+
+    _displacementController1.text = widget.sensor.displacement1.toStringAsFixed(2);
+    _displacementController2.text = widget.sensor.displacement2.toStringAsFixed(2);
+    _inputSignalController1.text = widget.sensor.inputSignal1.toStringAsFixed(2);
+    _inputSignalController2.text = widget.sensor.inputSignal2.toStringAsFixed(2);
   }
 
   @override

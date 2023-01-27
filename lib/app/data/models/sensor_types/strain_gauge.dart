@@ -5,6 +5,8 @@ import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class StrainGauge extends SensorBase {
+  double calValue = 1.0;
+
   StrainGauge({
     required BluetoothDevice device,
     Function(SensorBase)? dispose,
@@ -14,6 +16,11 @@ class StrainGauge extends SensorBase {
     super.dispose = dispose;
     super.onData = onData;
     bufferLength = 12;
+  }
+
+  @override
+  void initConfig(json) {
+    // TODO: implement initConfig
   }
 
   @override

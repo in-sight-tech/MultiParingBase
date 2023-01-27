@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -19,6 +20,11 @@ abstract class SensorBase {
   BluetoothCharacteristic? notifyCharacteristic;
   BluetoothCharacteristic? configCharacteristic;
 
+  StreamSubscription? configStream;
+  StreamSubscription? notifyStream;
+  StreamSubscription? deviceStateStream;
+
+  String jsonBuffer = '';
   Queue<int> buffer = Queue<int>();
   late int bufferLength;
 
@@ -29,14 +35,17 @@ abstract class SensorBase {
 
   String unit = 'v';
   int samplingRate = 200;
-  double calValue = 1.0;
-  bool mode = false;
   int? biasTime;
-  int? rsw;
 
   Future<bool> connect() async {
     try {
-      await device.connect(autoConnect: false);
+      await device.connect(timeout: const Duration(seconds: 4), autoConnect: false);
+
+      deviceStateStream = device.state.listen((event) {
+        if (event == BluetoothDeviceState.disconnected) {
+          disconnect();
+        }
+      });
 
       List<BluetoothService> services = await device.discoverServices();
       for (var service in services) {
@@ -71,6 +80,13 @@ abstract class SensorBase {
 
   void disconnect() {
     try {
+      configCharacteristic?.setNotifyValue(false);
+      configStream?.cancel();
+
+      notifyCharacteristic!.setNotifyValue(false);
+      notifyStream?.cancel();
+
+      deviceStateStream?.cancel();
       device.disconnect();
       dispose?.call(this);
     } catch (e) {
@@ -116,19 +132,27 @@ abstract class SensorBase {
     return checksum == packets.getUint16(bufferLength - 2, Endian.little);
   }
 
+  void initConfig(Map<String, dynamic> json);
+
   connectCharacteristic() {
     if (configCharacteristic != null) {
       configCharacteristic!.setNotifyValue(true);
-      configCharacteristic!.value.listen((event) {
-        print(String.fromCharCodes(event));
+      configStream = configCharacteristic!.value.listen((event) {
+        for (var unit in event) {
+          jsonBuffer += String.fromCharCode(unit);
+          if (String.fromCharCode(unit) == '}') {
+            print(jsonDecode(jsonBuffer));
+            initConfig(jsonDecode(jsonBuffer));
+            jsonBuffer = '';
+          }
+        }
       });
-
-      Future.delayed(const Duration(seconds: 1)).then((value) => requestConfig());
+      Future.delayed(const Duration(milliseconds: 300)).then((value) => requestConfig());
     }
 
     if (notifyCharacteristic != null) {
       notifyCharacteristic!.setNotifyValue(true);
-      notifyCharacteristic!.value.listen((event) {
+      notifyStream = notifyCharacteristic!.value.listen((event) {
         for (int byte in event) {
           while (buffer.length >= bufferLength) {
             if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {

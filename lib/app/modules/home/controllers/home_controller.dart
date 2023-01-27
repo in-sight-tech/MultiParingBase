@@ -126,6 +126,14 @@ class HomeController extends GetxController {
     removeDevice(sensor);
   }
 
+  Future<bool> allDispose() async {
+    for (SensorBase device in devices) {
+      removeDevice(device);
+    }
+
+    return true;
+  }
+
   void removeDevice(SensorBase sensor) {
     int index = devices.indexOf(sensor);
 
