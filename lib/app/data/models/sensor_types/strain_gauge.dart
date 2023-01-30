@@ -1,12 +1,19 @@
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class StrainGauge extends SensorBase {
+  num displacement1 = 0;
+  num displacement2 = 0;
+  num inputSignal1 = 0;
+  num inputSignal2 = 0;
+  bool mode = false;
+  num calValue = 1.0;
+
   StrainGauge({
-    required DiscoveredDevice device,
+    required BluetoothDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
   }) {
@@ -14,6 +21,17 @@ class StrainGauge extends SensorBase {
     super.dispose = dispose;
     super.onData = onData;
     bufferLength = 12;
+  }
+
+  @override
+  void initConfig(json) {
+    unit = json['unit'] as String;
+    calValue = json['cal_value'];
+    samplingRate = json['sampling_rate'] as int;
+    displacement1 = json['displacement1'];
+    displacement2 = json['displacement2'];
+    inputSignal1 = json['input_signal1'];
+    inputSignal2 = json['input_signal2'];
   }
 
   @override

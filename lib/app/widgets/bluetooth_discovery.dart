@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:lottie/lottie.dart';
 import 'package:multiparingbase/app/data/enums.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class TypeSelector extends StatefulWidget {
-  final Function(SensorType, DiscoveredDevice)? onTap;
+  final Function(SensorType, BluetoothDevice)? onTap;
 
   const TypeSelector({super.key, this.onTap});
 
@@ -101,7 +101,7 @@ class _TypeSelectorState extends State<TypeSelector> {
 
 class DeviceSelector extends StatefulWidget {
   final SensorType sensorTypeValue;
-  final Function(SensorType, DiscoveredDevice)? onTap;
+  final Function(SensorType, BluetoothDevice)? onTap;
 
   const DeviceSelector({
     super.key,
@@ -114,21 +114,21 @@ class DeviceSelector extends StatefulWidget {
 }
 
 class _DeviceSelectorState extends State<DeviceSelector> {
-  final flutterReactiveBle = FlutterReactiveBle();
+  final FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   bool isDiscovering = true;
-  final List<DiscoveredDevice> results = <DiscoveredDevice>[];
-  late StreamSubscription<DiscoveredDevice> streamSubscription;
-  DiscoveredDevice? sensorValue;
+  final List<ScanResult> results = <ScanResult>[];
+  late StreamSubscription<List<ScanResult>> streamSubscription;
+  ScanResult? sensorValue;
 
   @override
   void initState() {
-    Future.delayed(const Duration(milliseconds: 500), init);
-
     super.initState();
+    Future.delayed(const Duration(milliseconds: 500), init);
   }
 
   @override
   void dispose() {
+    flutterBlue.stopScan();
     streamSubscription.cancel();
     super.dispose();
   }
@@ -143,7 +143,6 @@ class _DeviceSelectorState extends State<DeviceSelector> {
       Permission.bluetooth,
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      Permission.bluetoothAdvertise,
     ].request();
   }
 
@@ -156,10 +155,17 @@ class _DeviceSelectorState extends State<DeviceSelector> {
     results.clear();
     update();
 
-    streamSubscription = flutterReactiveBle.scanForDevices(withServices: []).listen((scanResult) {
-      if (results.any((e) => e.id == scanResult.id) || scanResult.name.isEmpty) return;
+    flutterBlue.startScan();
 
-      results.add(scanResult);
+    streamSubscription = flutterBlue.scanResults.listen((results) {
+      for (var result in results) {
+        if (this.results.contains(result) || result.device.name.isEmpty) continue;
+
+        this.results.add(result);
+        update();
+      }
+    }, onDone: () {
+      isDiscovering = false;
       update();
     });
   }
@@ -167,7 +173,7 @@ class _DeviceSelectorState extends State<DeviceSelector> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 400,
+      width: 350,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -200,7 +206,8 @@ class _DeviceSelectorState extends State<DeviceSelector> {
                   child: RadioListTile(
                     value: results[index],
                     groupValue: sensorValue,
-                    title: Text(results[index].name),
+                    title: Text(results[index].device.name),
+                    subtitle: Text('${results[index].device.id}'),
                     onChanged: (value) => setState(() {
                       sensorValue = value;
                     }),
@@ -214,7 +221,7 @@ class _DeviceSelectorState extends State<DeviceSelector> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
-                  onPressed: sensorValue == null ? null : () => widget.onTap?.call(widget.sensorTypeValue, sensorValue!),
+                  onPressed: sensorValue == null ? null : () => widget.onTap?.call(widget.sensorTypeValue, sensorValue!.device),
                   child: const Text('Connect'),
                 ),
               ],

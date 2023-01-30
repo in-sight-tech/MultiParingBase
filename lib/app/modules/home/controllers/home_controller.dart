@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
@@ -50,7 +50,7 @@ class HomeController extends GetxController {
     }
   }
 
-  void connectBluetoothDevice(SensorType type, DiscoveredDevice device) async {
+  void connectBluetoothDevice(SensorType type, BluetoothDevice device) async {
     Get.back();
 
     Get.defaultDialog(
@@ -124,6 +124,14 @@ class HomeController extends GetxController {
 
   void onDispose(sensor) {
     removeDevice(sensor);
+  }
+
+  Future<bool> allDispose() async {
+    for (SensorBase device in devices) {
+      removeDevice(device);
+    }
+
+    return true;
   }
 
   void removeDevice(SensorBase sensor) {

@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:logger/logger.dart' as log;
 import 'package:multiparingbase/app/data/models/signals/signal_base.dart';
 import 'package:intl/intl.dart';
@@ -12,23 +12,19 @@ import 'package:intl/intl.dart';
 abstract class SensorBase {
   static const CHARACTERISTIC_UUID_WRITE = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
   static const CHARACTERISTIC_UUID_NOTIFY = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
-  static const CHARACTERISTIC_UUID_SAMPLINGRATE = "6E400004-B5A3-F393-E0A9-E50E24DCCA9E";
-  static const CHARACTERISTIC_UUID_CALVALUE = "6E400005-B5A3-F393-E0A9-E50E24DCCA9E";
-  static const CHARACTERISTIC_UUID_UNIT = "6E400006-B5A3-F393-E0A9-E50E24DCCA9E";
-  static const CHARACTERISTIC_UUID_MODE = "6E400007-B5A3-F393-E0A9-E50E24DCCA9E";
-  static const CHARACTERISTIC_UUID_RSW = "6E400008-B5A3-F393-E0A9-E50E24DCCA9E";
+  static const CHARACTERISTIC_UUID_CONFIG = "6E400004-B5A3-F393-E0A9-E50E24DCCA9E";
 
-  late DiscoveredDevice device;
-  final FlutterReactiveBle flutterReactiveBle = FlutterReactiveBle();
-  late StreamSubscription<ConnectionStateUpdate> connection;
-  QualifiedCharacteristic? writeCharacteristic;
-  QualifiedCharacteristic? sampingRateCharacteristic;
-  QualifiedCharacteristic? calValueCharacteristic;
-  QualifiedCharacteristic? unitCharacteristic;
-  QualifiedCharacteristic? modeCharacteristic;
-  QualifiedCharacteristic? notifyCharacteristic;
-  QualifiedCharacteristic? rswCharacteristic;
+  late BluetoothDevice device;
+  BluetoothService? service;
+  BluetoothCharacteristic? writeCharacteristic;
+  BluetoothCharacteristic? notifyCharacteristic;
+  BluetoothCharacteristic? configCharacteristic;
 
+  StreamSubscription? configStream;
+  StreamSubscription? notifyStream;
+  StreamSubscription? deviceStateStream;
+
+  String jsonBuffer = '';
   Queue<int> buffer = Queue<int>();
   late int bufferLength;
 
@@ -39,19 +35,41 @@ abstract class SensorBase {
 
   String unit = 'v';
   int samplingRate = 200;
-  double calValue = 1.0;
-  bool mode = false;
   int? biasTime;
-  int? rsw;
 
   Future<bool> connect() async {
     try {
-      connection = flutterReactiveBle
-          .connectToDevice(
-            id: device.id,
-            connectionTimeout: const Duration(seconds: 4),
-          )
-          .listen(listenState);
+      await device.connect(timeout: const Duration(seconds: 4), autoConnect: false);
+
+      deviceStateStream = device.state.listen((event) {
+        if (event == BluetoothDeviceState.disconnected) {
+          disconnect();
+        }
+      });
+
+      List<BluetoothService> services = await device.discoverServices();
+      for (var service in services) {
+        if (service.uuid == Guid("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")) {
+          this.service = service;
+        }
+      }
+
+      if (service == null) {
+        return false;
+      }
+
+      List<BluetoothCharacteristic> characteristics = service!.characteristics;
+      for (var characteristic in characteristics) {
+        if (characteristic.uuid == Guid(CHARACTERISTIC_UUID_WRITE)) {
+          writeCharacteristic = characteristic;
+        } else if (characteristic.uuid == Guid(CHARACTERISTIC_UUID_NOTIFY)) {
+          notifyCharacteristic = characteristic;
+        } else if (characteristic.uuid == Guid(CHARACTERISTIC_UUID_CONFIG)) {
+          configCharacteristic = characteristic;
+        }
+      }
+
+      connectCharacteristic();
 
       return true;
     } catch (e) {
@@ -62,7 +80,14 @@ abstract class SensorBase {
 
   void disconnect() {
     try {
-      connection.cancel();
+      configCharacteristic?.setNotifyValue(false);
+      configStream?.cancel();
+
+      notifyCharacteristic!.setNotifyValue(false);
+      notifyStream?.cancel();
+
+      deviceStateStream?.cancel();
+      device.disconnect();
       dispose?.call(this);
     } catch (e) {
       logger.e(e);
@@ -88,9 +113,11 @@ abstract class SensorBase {
 
   void setUnit(String unit) => writeReg(data: '<su$unit>');
 
+  void requestConfig() => writeReg(data: '<rc>');
+
   Future<void> writeReg({required String data, int delayMs = 0}) async {
     if (writeCharacteristic == null) return;
-    flutterReactiveBle.writeCharacteristicWithoutResponse(writeCharacteristic!, value: const Utf8Encoder().convert(data));
+    writeCharacteristic?.write(data.codeUnits);
     await Future.delayed(Duration(milliseconds: delayMs));
   }
 
@@ -105,109 +132,27 @@ abstract class SensorBase {
     return checksum == packets.getUint16(bufferLength - 2, Endian.little);
   }
 
-  void listenState(ConnectionStateUpdate state) async {
-    switch (state.connectionState) {
-      case DeviceConnectionState.disconnected:
-        connection.cancel();
-        logger.i('${device.name} disconnected');
-        dispose?.call(this);
-        break;
-      case DeviceConnectionState.connecting:
-        logger.i('Connecting to ${device.name}...');
-        break;
-      case DeviceConnectionState.connected:
-        logger.i('${device.name} connected');
-
-        flutterReactiveBle.discoverServices(device.id).then((services) {
-          for (DiscoveredService service in services) {
-            if (service.serviceId != Uuid.parse("6E400001-B5A3-F393-E0A9-E50E24DCCA9E")) continue;
-            for (DiscoveredCharacteristic characteristic in service.characteristics) {
-              searchCharacteristic(service, characteristic);
-            }
-          }
-
-          connectCharacteristic();
-        });
-        break;
-      case DeviceConnectionState.disconnecting:
-        logger.i('Disconnecting from ${device.name}...');
-        break;
-    }
-  }
-
-  searchCharacteristic(DiscoveredService service, DiscoveredCharacteristic characteristic) {
-    if (characteristic.isNotifiable) {
-      notifyCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    } else if (characteristic.isWritableWithResponse) {
-      writeCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_SAMPLINGRATE)) {
-      sampingRateCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_CALVALUE)) {
-      calValueCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_UNIT)) {
-      unitCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_MODE)) {
-      modeCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    } else if (characteristic.characteristicId == Uuid.parse(CHARACTERISTIC_UUID_RSW)) {
-      rswCharacteristic = QualifiedCharacteristic(
-        serviceId: service.serviceId,
-        characteristicId: characteristic.characteristicId,
-        deviceId: device.id,
-      );
-    }
-  }
+  void initConfig(Map<String, dynamic> json);
 
   connectCharacteristic() {
-    if (sampingRateCharacteristic != null) {
-      flutterReactiveBle.readCharacteristic(sampingRateCharacteristic!).then((value) {
-        samplingRate = Uint8List.fromList(value.toList()).buffer.asByteData().getUint32(0, Endian.little);
+    if (configCharacteristic != null) {
+      configCharacteristic!.setNotifyValue(true);
+      configStream = configCharacteristic!.value.listen((event) {
+        for (var unit in event) {
+          jsonBuffer += String.fromCharCode(unit);
+          if (String.fromCharCode(unit) == '}') {
+            print(jsonDecode(jsonBuffer));
+            initConfig(jsonDecode(jsonBuffer));
+            jsonBuffer = '';
+          }
+        }
       });
-    }
-
-    if (calValueCharacteristic != null) {
-      flutterReactiveBle.readCharacteristic(calValueCharacteristic!).then((value) {
-        calValue = Uint8List.fromList(value.toList()).buffer.asByteData().getFloat32(0, Endian.little);
-      });
-    }
-
-    if (unitCharacteristic != null) {
-      flutterReactiveBle.readCharacteristic(unitCharacteristic!).then((value) {
-        unit = String.fromCharCodes(value);
-      });
-    }
-
-    if (modeCharacteristic != null) {
-      flutterReactiveBle.readCharacteristic(modeCharacteristic!).then((value) {
-        mode = String.fromCharCodes(value) == '10v' ? true : false;
-      });
+      Future.delayed(const Duration(milliseconds: 300)).then((value) => requestConfig());
     }
 
     if (notifyCharacteristic != null) {
-      flutterReactiveBle.subscribeToCharacteristic(notifyCharacteristic!).listen((event) {
+      notifyCharacteristic!.setNotifyValue(true);
+      notifyStream = notifyCharacteristic!.value.listen((event) {
         for (int byte in event) {
           while (buffer.length >= bufferLength) {
             if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {

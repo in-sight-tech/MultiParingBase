@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class Imu extends SensorBase {
   ImuContents? contents;
+  int? rsw;
 
   Imu({
-    required DiscoveredDevice device,
+    required BluetoothDevice device,
     Function(SensorBase)? dispose,
     Function(SensorBase, SignalBase)? onData,
   }) {
@@ -18,16 +19,21 @@ class Imu extends SensorBase {
 
   @override
   connectCharacteristic() {
-    if (rswCharacteristic != null) {
-      flutterReactiveBle.readCharacteristic(rswCharacteristic!).then((value) {
-        rsw = Uint8List.fromList(value.toList()).buffer.asByteData().getInt32(0, Endian.little);
+    // if (rswCharacteristic != null) {
+    //   flutterReactiveBle.readCharacteristic(rswCharacteristic!).then((value) {
+    //     rsw = Uint8List.fromList(value.toList()).buffer.asByteData().getInt32(0, Endian.little);
 
-        contents = ImuContents(rsw ?? 3);
-        bufferLength = 8 + contents!.getNumberOfActiveContent * 6;
-      });
-    }
+    //     contents = ImuContents(rsw ?? 3);
+    //     bufferLength = 8 + contents!.getNumberOfActiveContent * 6;
+    //   });
+    // }
 
     super.connectCharacteristic();
+  }
+
+  @override
+  void initConfig(json) {
+    // TODO: implement initConfig
   }
 
   @override
