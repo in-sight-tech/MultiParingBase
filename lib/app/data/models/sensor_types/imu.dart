@@ -5,7 +5,6 @@ import 'package:multiparingbase/app/data/models/signals.dart';
 
 class Imu extends SensorBase {
   ImuContents? contents;
-  int? rsw;
 
   Imu({
     required BluetoothDevice device,
@@ -18,22 +17,12 @@ class Imu extends SensorBase {
   }
 
   @override
-  connectCharacteristic() {
-    // if (rswCharacteristic != null) {
-    //   flutterReactiveBle.readCharacteristic(rswCharacteristic!).then((value) {
-    //     rsw = Uint8List.fromList(value.toList()).buffer.asByteData().getInt32(0, Endian.little);
-
-    //     contents = ImuContents(rsw ?? 3);
-    //     bufferLength = 8 + contents!.getNumberOfActiveContent * 6;
-    //   });
-    // }
-
-    super.connectCharacteristic();
-  }
-
-  @override
   void initConfig(json) {
-    // TODO: implement initConfig
+    print(json);
+    samplingRate = json['sampling_rate'] as int;
+    unit = json['unit'] as String;
+    contents = ImuContents(json['rsw'] as int);
+    bufferLength = 8 + contents!.getNumberOfActiveContent * 6;
   }
 
   @override

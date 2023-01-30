@@ -26,7 +26,7 @@ abstract class SensorBase {
 
   String jsonBuffer = '';
   Queue<int> buffer = Queue<int>();
-  late int bufferLength;
+  int? bufferLength;
 
   log.Logger logger = log.Logger();
 
@@ -129,7 +129,7 @@ abstract class SensorBase {
       checksum = (checksum + packets.getUint8(i)) & 0xffff;
     }
 
-    return checksum == packets.getUint16(bufferLength - 2, Endian.little);
+    return checksum == packets.getUint16(bufferLength! - 2, Endian.little);
   }
 
   void initConfig(Map<String, dynamic> json);
@@ -141,7 +141,6 @@ abstract class SensorBase {
         for (var unit in event) {
           jsonBuffer += String.fromCharCode(unit);
           if (String.fromCharCode(unit) == '}') {
-            print(jsonDecode(jsonBuffer));
             initConfig(jsonDecode(jsonBuffer));
             jsonBuffer = '';
           }
@@ -153,8 +152,9 @@ abstract class SensorBase {
     if (notifyCharacteristic != null) {
       notifyCharacteristic!.setNotifyValue(true);
       notifyStream = notifyCharacteristic!.value.listen((event) {
+        if (bufferLength == null) return;
         for (int byte in event) {
-          while (buffer.length >= bufferLength) {
+          while (buffer.length >= bufferLength!) {
             if (buffer.elementAt(0) == 0x55 && buffer.elementAt(1) == 0x55) {
               if (isValiable(ByteData.view(Uint8List.fromList(buffer.toList()).buffer))) {
                 calSignal(ByteData.view(Uint8List.fromList(buffer.toList()).buffer));
