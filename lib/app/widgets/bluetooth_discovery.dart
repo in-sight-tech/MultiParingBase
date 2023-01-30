@@ -122,9 +122,8 @@ class _DeviceSelectorState extends State<DeviceSelector> {
 
   @override
   void initState() {
-    Future.delayed(const Duration(milliseconds: 500), init);
-
     super.initState();
+    Future.delayed(const Duration(milliseconds: 500), init);
   }
 
   @override
@@ -156,7 +155,7 @@ class _DeviceSelectorState extends State<DeviceSelector> {
     results.clear();
     update();
 
-    flutterBlue.startScan(timeout: const Duration(seconds: 4));
+    flutterBlue.startScan();
 
     streamSubscription = flutterBlue.scanResults.listen((results) {
       for (var result in results) {
@@ -165,13 +164,16 @@ class _DeviceSelectorState extends State<DeviceSelector> {
         this.results.add(result);
         update();
       }
+    }, onDone: () {
+      isDiscovering = false;
+      update();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 400,
+      width: 350,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -205,6 +207,7 @@ class _DeviceSelectorState extends State<DeviceSelector> {
                     value: results[index],
                     groupValue: sensorValue,
                     title: Text(results[index].device.name),
+                    subtitle: Text('${results[index].device.id}'),
                     onChanged: (value) => setState(() {
                       sensorValue = value;
                     }),

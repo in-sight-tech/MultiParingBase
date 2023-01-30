@@ -5,7 +5,12 @@ import 'package:multiparingbase/app/data/models/sensor_types/sensor_base.dart';
 import 'package:multiparingbase/app/data/models/signals.dart';
 
 class StrainGauge extends SensorBase {
-  double calValue = 1.0;
+  num displacement1 = 0;
+  num displacement2 = 0;
+  num inputSignal1 = 0;
+  num inputSignal2 = 0;
+  bool mode = false;
+  num calValue = 1.0;
 
   StrainGauge({
     required BluetoothDevice device,
@@ -20,7 +25,13 @@ class StrainGauge extends SensorBase {
 
   @override
   void initConfig(json) {
-    // TODO: implement initConfig
+    unit = json['unit'] as String;
+    calValue = json['cal_value'];
+    samplingRate = json['sampling_rate'] as int;
+    displacement1 = json['displacement1'];
+    displacement2 = json['displacement2'];
+    inputSignal1 = json['input_signal1'];
+    inputSignal2 = json['input_signal2'];
   }
 
   @override
