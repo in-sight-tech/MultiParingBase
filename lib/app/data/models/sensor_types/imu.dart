@@ -18,7 +18,6 @@ class Imu extends SensorBase {
 
   @override
   void initConfig(json) {
-    print(json);
     samplingRate = json['sampling_rate'] as int;
     unit = json['unit'] as String;
     contents = ImuContents(json['rsw'] as int);
