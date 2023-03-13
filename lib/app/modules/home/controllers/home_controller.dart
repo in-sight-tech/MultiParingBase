@@ -7,11 +7,12 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:isar/isar.dart';
 import 'package:logger/logger.dart' as log;
-import 'package:multiparingbase/app/data/collections/collections.dart';
-import 'package:multiparingbase/app/data/enums.dart';
-import 'package:multiparingbase/app/data/models/models.dart';
-import 'package:multiparingbase/app/data/models/signals.dart';
-import 'package:multiparingbase/app/data/utils.dart';
+
+import '../../../data/collections/collections.dart';
+import '../../../data/enums.dart';
+import '../../../data/models/models.dart';
+import '../../../data/models/signals.dart';
+import '../../../data/utils.dart';
 
 class HomeController extends GetxController {
   static HomeController get instance => Get.find<HomeController>();
@@ -25,6 +26,9 @@ class HomeController extends GetxController {
   late Isar isar;
 
   late Timer _timer;
+  var stopwatch = 0.obs;
+
+  bool gps = false;
 
   @override
   void onInit() {
@@ -33,14 +37,13 @@ class HomeController extends GetxController {
     isar = Isar.openSync([SensorInformationSchema, SensorSignalSchema]);
 
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (devices.isNotEmpty) update(['tile']);
+      if (devices.isNotEmpty) update(['tile', 'fab']);
+      stopwatch.value++;
     });
   }
 
   @override
   void onClose() {
-    super.onClose();
-
     if (isar.isOpen) isar.close();
 
     if (_timer.isActive) _timer.cancel();
@@ -48,6 +51,7 @@ class HomeController extends GetxController {
     for (SensorBase device in devices) {
       device.disconnect();
     }
+    super.onClose();
   }
 
   void connectBluetoothDevice(SensorType type, BluetoothDevice device) async {
@@ -82,7 +86,6 @@ class HomeController extends GetxController {
         dispose: onDispose,
       );
     }
-
     if (await sensor.connect()) {
       Get.back();
       devices.add(sensor);
@@ -105,7 +108,7 @@ class HomeController extends GetxController {
     }
   }
 
-  void onData(sensor, signal) async {
+  void onData(SensorBase sensor, SignalBase signal) async {
     int index = devices.indexOf(sensor);
 
     if (index == -1) return;
@@ -153,6 +156,7 @@ class HomeController extends GetxController {
     for (SensorBase device in devices) {
       device.start();
     }
+    stopwatch.value = 0;
   }
 
   void recordStop() {
@@ -176,8 +180,8 @@ class HomeController extends GetxController {
               id: device.hashCode,
               deviceName: device.device.name,
               type: SensorType.imu,
-              units: device.contents?.units(device.unit) ?? [],
-              names: device.contents?.names,
+              units: ['ms', ...?device.contents?.units(device.unit)],
+              names: ['time', ...?device.contents?.names],
             ));
           }
           if (device is Analog) {
@@ -185,7 +189,7 @@ class HomeController extends GetxController {
               id: device.hashCode,
               deviceName: device.device.name,
               type: SensorType.analog,
-              units: ['s', device.unit],
+              units: ['ms', device.unit],
               names: ['time', device.unit],
             ));
           }
@@ -194,7 +198,7 @@ class HomeController extends GetxController {
               id: device.hashCode,
               deviceName: device.device.name,
               type: SensorType.strainGauge,
-              units: ['s', device.unit],
+              units: ['ms', device.unit],
               names: ['time', device.unit],
             ));
           }

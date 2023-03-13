@@ -1,11 +1,12 @@
 import 'dart:async';
-
 import 'package:fluid_dialog/fluid_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:logger/logger.dart';
 import 'package:lottie/lottie.dart';
-import 'package:multiparingbase/app/data/enums.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import '../data/enums.dart';
 
 class TypeSelector extends StatefulWidget {
   final Function(SensorType, BluetoothDevice)? onTap;
@@ -34,43 +35,24 @@ class _TypeSelectorState extends State<TypeSelector> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          const Divider(),
-          Card(
-            child: RadioListTile(
-              value: SensorType.strainGauge,
-              groupValue: sensorTypeValue,
-              title: const Text('Strain Gauge'),
-              onChanged: (value) => setState(() {
-                sensorTypeValue = value!;
-              }),
-            ),
-          ),
-          Card(
-            child: RadioListTile(
-              value: SensorType.imu,
-              groupValue: sensorTypeValue,
-              title: const Text('IMU'),
-              onChanged: (value) => setState(() {
-                sensorTypeValue = value!;
-              }),
-            ),
-          ),
-          Card(
-            child: RadioListTile(
-              value: SensorType.analog,
-              groupValue: sensorTypeValue,
-              title: const Text('Analog'),
-              onChanged: (value) => setState(() {
-                sensorTypeValue = value!;
-              }),
-            ),
-          ),
+          ...SensorType.values.where((e) => e != SensorType.gps).map(
+                (e) => Card(
+                  child: RadioListTile(
+                    value: e,
+                    groupValue: sensorTypeValue,
+                    title: Text(e.displayName),
+                    onChanged: (value) => setState(() {
+                      sensorTypeValue = value!;
+                    }),
+                  ),
+                ),
+              ),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
+                onPressed: Navigator.of(context).pop,
                 child: const Text('Cancel'),
-                onPressed: () {},
               ),
               const SizedBox(width: 10),
               ElevatedButton(
@@ -123,7 +105,7 @@ class _DeviceSelectorState extends State<DeviceSelector> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 500), init);
+    init();
   }
 
   @override
@@ -139,11 +121,14 @@ class _DeviceSelectorState extends State<DeviceSelector> {
   }
 
   Future<void> requestPermission() async {
-    await [
+    Map<Permission, PermissionStatus> statuses = await [
       Permission.bluetooth,
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
+      Permission.location,
     ].request();
+
+    Logger().d(statuses);
   }
 
   void update() {
@@ -164,9 +149,6 @@ class _DeviceSelectorState extends State<DeviceSelector> {
         this.results.add(result);
         update();
       }
-    }, onDone: () {
-      isDiscovering = false;
-      update();
     });
   }
 

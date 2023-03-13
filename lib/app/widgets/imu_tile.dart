@@ -309,7 +309,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
 
   int? returnRateValue;
 
-  late ImuContents returnContentsValue;
+  late ImuSettings returnContentsValue;
 
   @override
   void initState() {
@@ -318,7 +318,7 @@ class _ImuSettingDialogState extends State<ImuSettingDialog> {
     _nameController.text = widget.sensor.device.name;
     unitValue = widget.sensor.unit == 'm/s^2' ? 'm/s²' : 'g';
     returnRateValue = widget.sensor.samplingRate;
-    returnContentsValue = widget.sensor.contents ?? ImuContents(3);
+    returnContentsValue = widget.sensor.contents ?? ImuSettings(3);
   }
 
   @override
